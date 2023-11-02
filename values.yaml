@@ -1,0 +1,38 @@
+controller:
+  volumes:
+    userRepoPath: /user-repo
+    dataPath: /data/data_storage
+    cerebroRepoPath: /cerebro-repo
+    metricsPath: /data/metrics_storage
+    checkpointPath: /data/checkpoint_storage
+    nodeHardwareInfo: /data/node_hardware_info
+  git:
+    cerebroRepoBranch: v0.1
+    cerebroRepoURL: https://github.com/prsridha/cerebro-voyager.git
+    image: 782408612084.dkr.ecr.ca-central-1.amazonaws.com/cerebro-kube:latest
+    gitSyncImage: 782408612084.dkr.ecr.ca-central-1.amazonaws.com/git-sync:latest
+  services:
+    lokiPort: 3100
+    jupyterPort: 8888
+    tensorboardPort: 6006
+    grafanaNodePort: 30030
+    jupyterNodePort: 30888
+    prometheusNodePort: 30090
+    tensorboardNodePort: 30999
+user:
+  numWorkers: 2
+  username: prsridha
+worker:
+  rpcPort: 7777
+  sampleSize: 0.01
+  shardMultiplicity: 4
+  workerDataPath: /cerebro_data_storage_worker
+  workerDataHostPath: /mnt/cerebro_data_storage_worker
+webApp:
+  uiPort: 80
+  backendPort: 8083
+  uiNodePort: 30080
+  backendNodePort: 30083
+  mountPath: /data
+  repoURL: git@github.com:prsridha/cerebro-ui.git
+  image: 782408612084.dkr.ecr.ca-central-1.amazonaws.com/cerebro-ui:latest

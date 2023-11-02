@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyternotebooksvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: cerebro-controller-svc
+    serviceApp: jupyter
+spec:
+  selector:
+    app: cerebro-controller
+  ports:
+    - port: {{ .Values.controller.services.jupyterPort }}
+      targetPort: {{ .Values.controller.services.jupyterPort }}
+      nodePort: {{ .Values.controller.services.jupyterNodePort }}
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tensorboardsvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: cerebro-controller-svc
+    serviceApp: tensorboard
+spec:
+  selector:
+    app: cerebro-controller
+  ports:
+    - port: {{ .Values.controller.services.tensorboardPort }}
+      targetPort: {{ .Values.controller.services.tensorboardPort }}
+      nodePort: {{ .Values.controller.services.tensorboardNodePort }}
+  type: NodePort

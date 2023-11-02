@@ -1,0 +1,34 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: {{ name }}
+  region: {{ region }}
+  version: "{{ kubernetesVersion }}"
+availabilityZones: {{ availabilityZones }}
+managedNodeGroups:
+- name: ng-controller
+  labels:
+    role: controller
+  instanceType: {{ controller.instanceType }}
+  desiredCapacity: 1
+  volumeSize: {{ volumeSize }}
+  ssh:
+    allow: true
+    publicKeyName: {{ publicKeyName }}
+- name: ng-worker
+  labels:
+    role: worker
+  instanceTypes: {{ worker.instanceType }}
+  desiredCapacity: {{ desiredCapacity }}
+  volumeSize: {{ volumeSize }}
+  ami: {{ ami }}
+  amiFamily: AmazonLinux2
+  availabilityZones: {{ availabilityZones }}
+  spot: {{ workerSpot }}
+  ssh:
+    allow: true
+    publicKeyName: {{ publicKeyName }}
+  overrideBootstrapCommand: |
+    #!/bin/bash
+
+    /etc/eks/bootstrap.sh {{ name }} --container-runtime containerd
