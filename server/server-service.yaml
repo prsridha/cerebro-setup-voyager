@@ -1,0 +1,38 @@
+# Webapp Service 
+apiVersion: v1
+kind: Service
+metadata:
+  name: serversvc
+  namespace: default
+  labels:
+    app: cerebro-server-svc
+    serviceApp: server
+spec:
+  selector:
+    app: cerebro-server
+    user: {{ .Values.user.username }}
+  ports:
+  - protocol: "TCP"
+    port: {{ .Values.server.serverPort }}
+    targetPort: {{ .Values.server.serverPort }}
+    nodePort: {{ .Values.server.serverNodePort }}
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webuisvc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: cerebro-web-ui
+    serviceApp: webui
+    user: {{ .Values.user.username }}
+spec:
+  selector:
+    app: cerebro-server
+    user: {{ .Values.user.username }}
+  ports:
+    - port: {{ .Values.server.uiPort }}
+      targetPort: {{ .Values.server.uiPort }}
+      nodePort: {{ .Values.server.uiNodePort }}
+  type: NodePort

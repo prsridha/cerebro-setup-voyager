@@ -5,21 +5,18 @@ metadata:
   name: {{ .Values.user.username }}-cerebro-controller
   namespace: default
   labels:
-        app: cerebro-controller
-        type: controller
-        user: {{ .Values.user.username }}
+    app: cerebro-controller
+    user: {{ .Values.user.username }}
 spec:
   selector:
     matchLabels:
       app: cerebro-controller
-      type: controller
       user: {{ .Values.user.username }}
   replicas: 1
   template:
     metadata:
       labels:
         app: cerebro-controller
-        type: controller
         user: {{ .Values.user.username }}
     spec:
       hostname: controller
@@ -28,27 +25,38 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: kubernetes.io/hostname
+              - key: brightcomputing.com/node-category
                 operator: In
                 values:
-                - vgr-10-02
+                - goya
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - cerebro-controller
+              topologyKey: kubernetes.io/hostname
       serviceAccountName: {{ .Values.user.username }}
       initContainers:
-      - name: git-sync-cerebro
+      - name: git-sync
         image: {{ .Values.controller.git.gitSyncImage }}
         imagePullPolicy: Always
         volumeMounts:
         - name: cerebro-repo
-          mountPath: {{ .Values.controller.volumes.cerebroRepoMountPath }}
+          mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
         env:
         - name: GIT_SYNC_DIR
-          value: cerebro-kube
+          value: cerebro-core
         - name: GIT_SYNC_REPO
           value: {{ .Values.controller.git.cerebroRepoURL }}
         - name: GIT_SYNC_BRANCH
           value: {{ .Values.controller.git.cerebroRepoBranch }}
         - name: GIT_SYNC_ROOT
-          value: {{ .Values.controller.volumes.cerebroRepoMountPath }}
+          value: {{ .Values.controller.volumes.cerebroRepoPath }}
         - name: GIT_SYNC_SERVER
           value: {{ .Values.creds.gitServer }}
         securityContext:
@@ -57,9 +65,18 @@ spec:
       - name: controller
         image: {{ .Values.controller.git.image }}
         imagePullPolicy: Always
-        command: [ "/bin/bash", "/cerebro-repo/cerebro-kube/init.sh"]
-        workingDir: /cerebro-repo/cerebro-kube
+        command: [ "/bin/bash", "/cerebro-repo/cerebro-core/init.sh"]
+        workingDir: /cerebro-repo/cerebro-core
+        resources:
+          requests:
+            cpu: 8
+            memory: 16Gi
+          limits:
+            cpu: 16
+            memory: 32Gi
         env:
+        - name: USERNAME
+          value: {{ .Values.user.username }}
         - name: RPC_PORT
           value: "{{ .Values.worker.rpcPort }}"
         - name: ML_METRICS_LOGDIR
@@ -83,21 +100,21 @@ spec:
       volumes:
       - name: cerebro-repo
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.user.username }}/{{ .Values.controller.volumes.cerebroRepoPath }}
-          type: Directory
+          path: /voyager/ceph/users/{{ .Values.user.username }}/volumes{{ .Values.controller.volumes.cerebroRepoPath }}
+          type: DirectoryOrCreate
       - name: user-repo
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.user.username }}/{{ .Values.controller.volumes.userRepoPath }}
-          type: Directory
+          path: /voyager/ceph/users/{{ .Values.user.username }}/volumes{{ .Values.controller.volumes.userRepoPath }}
+          type: DirectoryOrCreate
       - name: checkpoint-storage
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.user.username }}/{{ .Values.controller.volumes.checkpointPath }}
-          type: Directory
+          path: /voyager/ceph/users/{{ .Values.user.username }}/volumes{{ .Values.controller.volumes.checkpointPath }}
+          type: DirectoryOrCreate
       - name: metrics-storage
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.user.username }}/{{ .Values.controller.volumes.metricsMountPath }}
-          type: Directory
+          path: /voyager/ceph/users/{{ .Values.user.username }}/volumes{{ .Values.controller.volumes.metricsMountPath }}
+          type: DirectoryOrCreate
       - name: data-storage
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.user.username }}/{{ .Values.controller.volumes.dataPath }}
-          type: Directory
+          path: /voyager/ceph/users/{{ .Values.user.username }}/volumes{{ .Values.controller.volumes.dataPath }}
+          type: DirectoryOrCreate

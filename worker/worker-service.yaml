@@ -2,13 +2,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: workersvc
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.user.username }}-workersvc
+  namespace: default
   labels:
-    type: cerebro-worker
+    app: cerebro-worker-svc
+    user: {{ .Values.user.username }}
 spec:
   selector:
     app: cerebro-worker
+    user: {{ .Values.user.username }}
   ports:
   - name: rpc-port
     protocol: TCP

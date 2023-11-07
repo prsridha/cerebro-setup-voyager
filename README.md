@@ -1,1 +1,1 @@
-# cerebro-voyager-setup
+# cerebro-setup-voyager

@@ -1,6 +1,0 @@
-clusterName: cerebro-kube-small-1
-workerSpotInstance: false
-numWorkers: 2
-controllerInstance: t3.2xlarge
-workerInstances:
-- g4dn.12xlarge

@@ -1,0 +1,88 @@
+# Controller Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.user.username }}-cerebro-server
+  namespace: default
+  labels:
+    app: cerebro-server
+    user: {{ .Values.user.username }}
+spec:
+  selector:
+    matchLabels:
+      app: cerebro-server
+      user: {{ .Values.user.username }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cerebro-server
+        user: {{ .Values.user.username }}
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: brightcomputing.com/node-category
+                operator: In
+                values:
+                - goya
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - cerebro-controller
+              topologyKey: kubernetes.io/hostname
+      initContainers:
+      containers:
+      - name: server-container
+        image: {{ .Values.controller.git.image }}
+        imagePullPolicy: Always
+        command: [ "/bin/bash", "/cerebro-repo/cerebro-core/server/run_server.sh"]
+        workingDir: /cerebro-repo/cerebro-core/server
+        env:
+        - name: POD_TYPE
+          value: "server"
+        volumeMounts:
+        - name: cerebro-repo
+          mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
+        - name: data
+          mountPath: {{ .Values.server.dataPath }}
+        ports:
+        - name: server-port
+          containerPort: {{ .Values.server.serverPort }}
+        - name: s-nodeport
+          containerPort: {{ .Values.server.serverNodePort }}
+      - name: ui-container
+        image: {{ .Values.controller.git.image }}
+        imagePullPolicy: Always
+        command: [ "/bin/bash", "/cerebro-repo/cerebro-core/web_ui/run_ui.sh"]
+        workingDir: /cerebro-repo/cerebro-core/web_ui
+        env:
+        - name: POD_TYPE
+          value: "web_ui"
+        - name: HOST
+          value: {{ .Values.cluster.networking.publicDNSName }}
+        volumeMounts:
+        - name: cerebro-repo
+          mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
+        - name: data
+          mountPath: {{ .Values.server.dataPath }}
+        ports:
+        - containerPort: {{ .Values.server.uiPort }}
+          name: ui-port
+        - containerPort: {{ .Values.server.uiNodePort }}
+          name: ui-nodeport
+      volumes:
+      - name: cerebro-repo
+        hostPath:
+          path: /voyager/ceph/users/{{ .Values.user.username }}/volumes{{ .Values.controller.volumes.cerebroRepoPath }}
+          type: DirectoryOrCreate
+      - name: data
+        emptyDir: {}

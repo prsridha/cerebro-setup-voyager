@@ -28,11 +28,9 @@ worker:
   shardMultiplicity: 4
   workerDataPath: /cerebro_data_storage_worker
   workerDataHostPath: /mnt/cerebro_data_storage_worker
-webApp:
+server:
   uiPort: 80
   backendPort: 8083
   uiNodePort: 30080
   backendNodePort: 30083
-  mountPath: /data
-  repoURL: git@github.com:prsridha/cerebro-ui.git
-  image: 782408612084.dkr.ecr.ca-central-1.amazonaws.com/cerebro-ui:latest
+  dataPath: /data
