@@ -75,25 +75,25 @@ spec:
           medium: Memory
       - name: cerebro-repo
         hostPath:
-          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.cerebroRepoPath }}
+          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.cerebroRepoPath }}"
           type: DirectoryOrCreate
       - name: user-repo
         hostPath:
-          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userRepoPath }}
+          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.userRepoPath }}"
           type: DirectoryOrCreate
       - name: data-storage-worker
         hostPath:
-          path: {{ .Values.controller.volumes.baseHostPath }}/worker_storage
+          path: "{{ .Values.controller.volumes.baseHostPath }:}/worker_storage"
           type: DirectoryOrCreate
       - name: data-storage
         hostPath:
-          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
+          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.dataPath }}"
           type: DirectoryOrCreate
       - name: metrics-storage
         hostPath:
-          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.metricsMountPath }}
+          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.metricsMountPath }}"
           type: DirectoryOrCreate
       - name: checkpoint-storage
         hostPath:
-          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.checkpointPath }}
+          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.checkpointPath }}"
           type: DirectoryOrCreate
