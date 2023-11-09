@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: serversvc
-  namespace: default
+  namespace: {{ .Values.cluster.namespace }}
   labels:
     app: cerebro-server-svc
     serviceApp: server

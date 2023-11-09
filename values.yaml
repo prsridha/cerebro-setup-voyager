@@ -5,7 +5,7 @@ controller:
     cerebroRepoPath: /cerebro-repo
     metricsPath: /data/metrics_storage
     checkpointPath: /data/checkpoint_storage
-    nodeHardwareInfo: /data/node_hardware_info
+    baseHostPath: /voyager/ceph/users/*username/volumes
   git:
     cerebroRepoBranch: v0.1
     cerebroRepoURL: https://github.com/prsridha/cerebro-voyager.git
@@ -20,6 +20,7 @@ controller:
     prometheusNodePort: 30090
     tensorboardNodePort: 30999
 cluster:
+  namespace: default
   resourceRequests:
     controllerMemory: 16G
     controllerCPU: 8
@@ -33,7 +34,7 @@ cluster:
     workerCPU: 48
     workerGPU: 4
   numWorkers: 2
-  username: prsridha
+  username: &username <username>
 worker:
   rpcPort: 7777
   sampleSize: 0.01

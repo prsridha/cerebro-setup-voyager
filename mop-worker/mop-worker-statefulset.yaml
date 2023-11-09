@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Values.cluster.username }}-cerebro-mop-worker
-  namespace: default
+  namespace: {{ .Values.cluster.namespace }}
 spec:
   podManagementPolicy: Parallel
   serviceName: {{ .Values.cluster.username }}-workersvc
@@ -75,25 +75,25 @@ spec:
           medium: Memory
       - name: cerebro-repo
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.cerebroRepoPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.cerebroRepoPath }}
           type: DirectoryOrCreate
       - name: user-repo
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.userRepoPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userRepoPath }}
           type: DirectoryOrCreate
       - name: data-storage-worker
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes/worker_storage
+          path: {{ .Values.controller.volumes.baseHostPath }}/worker_storage
           type: DirectoryOrCreate
       - name: data-storage
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.dataPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
           type: DirectoryOrCreate
       - name: metrics-storage
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.metricsMountPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.metricsMountPath }}
           type: DirectoryOrCreate
       - name: checkpoint-storage
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.checkpointPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.checkpointPath }}
           type: DirectoryOrCreate

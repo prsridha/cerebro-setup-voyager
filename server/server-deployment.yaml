@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.user.username }}-cerebro-server
-  namespace: default
+  namespace: {{ .Values.cluster.namespace }}
   labels:
     app: cerebro-server
     user: {{ .Values.user.username }}
@@ -89,7 +89,7 @@ spec:
       volumes:
       - name: cerebro-repo
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.user.username }}/volumes{{ .Values.controller.volumes.cerebroRepoPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.cerebroRepoPath }}
           type: DirectoryOrCreate
       - name: data
         emptyDir: {}

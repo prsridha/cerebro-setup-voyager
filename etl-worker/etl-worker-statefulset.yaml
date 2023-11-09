@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Values.cluster.username }}-cerebro-etl-worker
-  namespace: default
+  namespace: {{ .Values.cluster.namespace }}
 spec:
   podManagementPolicy: Parallel
   replicas: 0
@@ -61,17 +61,17 @@ spec:
       volumes:
       - name: cerebro-repo
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.cerebroRepoPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.cerebroRepoPath }}
           type: DirectoryOrCreate
       - name: user-repo
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.userRepoPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userRepoPath }}
           type: DirectoryOrCreate
       - name: data-storage
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.dataPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
           type: DirectoryOrCreate
       - name: data-storage-worker
         hostPath:
-          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes/worker_storage
+          path: {{ .Values.controller.volumes.baseHostPath }}/worker_storage
           type: DirectoryOrCreate
