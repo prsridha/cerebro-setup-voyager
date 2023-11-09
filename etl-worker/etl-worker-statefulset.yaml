@@ -1,0 +1,77 @@
+# Worker StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.cluster.username }}-cerebro-etl-worker
+  namespace: default
+spec:
+  podManagementPolicy: Parallel
+  replicas: 0
+  selector:
+    matchLabels:
+      app: cerebro-etl-worker
+      user: {{ .Values.cluster.username }}
+  template:
+    metadata:
+      labels:
+        app: cerebro-etl-worker
+        user: {{ .Values.cluster.username }}
+    spec:
+      hostname: $WORKER_ID_SELF
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: brightcomputing.com/node-category
+                operator: In
+                values:
+                - gaudi
+      serviceAccountName: {{ .Values.cluster.username }}
+      containers:
+      - name: etl-container
+        image: {{ .Values.controller.git.image }}
+        imagePullPolicy: Always
+        command: [ "/bin/bash", "/cerebro-repo/cerebro-core/etl/run_etl.sh" ]
+        workingDir: /cerebro-repo/cerebro-core
+        resources:
+          limits:
+            memory: {{ .Values.cluster.resourceLimits.workerMemory }}
+            cpu: {{ .Values.cluster.resourceLimits.workerCPU }}
+          requests:
+            memory: {{ .Values.cluster.resourceRequests.workerMemory }}
+            cpu: {{ .Values.cluster.resourceRequests.workerCPU }}
+        env:
+          - name: WORKER_ID_SELF
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_TYPE
+            value: "etl"
+        volumeMounts:
+        - name: cerebro-repo
+          mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
+        - name: user-repo
+          mountPath: {{ .Values.controller.volumes.userRepoPath }}
+        - name: data-storage
+          mountPath: {{ .Values.controller.volumes.dataPath }}
+        - name: data-storage-worker
+          subPathExpr: $(WORKER_ID_SELF)
+          mountPath: {{ .Values.worker.workerDataPath }}
+      volumes:
+      - name: cerebro-repo
+        hostPath:
+          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.cerebroRepoPath }}
+          type: DirectoryOrCreate
+      - name: user-repo
+        hostPath:
+          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.userRepoPath }}
+          type: DirectoryOrCreate
+      - name: data-storage
+        hostPath:
+          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes{{ .Values.controller.volumes.dataPath }}
+          type: DirectoryOrCreate
+      - name: data-storage-worker
+        hostPath:
+          path: /voyager/ceph/users/{{ .Values.cluster.username }}/volumes/worker_storage
+          type: DirectoryOrCreate

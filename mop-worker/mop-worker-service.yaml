@@ -9,7 +9,7 @@ metadata:
     user: {{ .Values.user.username }}
 spec:
   selector:
-    app: cerebro-worker
+    app: cerebro-mop-worker
     user: {{ .Values.user.username }}
   ports:
   - name: rpc-port

@@ -19,7 +19,19 @@ controller:
     jupyterNodePort: 30888
     prometheusNodePort: 30090
     tensorboardNodePort: 30999
-user:
+cluster:
+  resourceRequests:
+    controllerMemory: 16G
+    controllerCPU: 8
+    workerMemory: 64G
+    workerCPU: 48
+    workerGPU: 4
+  resourceLimits:
+    controllerMemory: 32G
+    controllerCPU: 16
+    workerMemory: 120G
+    workerCPU: 48
+    workerGPU: 4
   numWorkers: 2
   username: prsridha
 worker:

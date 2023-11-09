@@ -46,6 +46,13 @@ spec:
         imagePullPolicy: Always
         command: [ "/bin/bash", "/cerebro-repo/cerebro-core/server/run_server.sh"]
         workingDir: /cerebro-repo/cerebro-core/server
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 8
+            memory: 16Gi
         env:
         - name: POD_TYPE
           value: "server"
