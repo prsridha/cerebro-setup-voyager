@@ -42,12 +42,16 @@ spec:
             memory: {{ .Values.cluster.resourceRequests.workerMemory }}
             cpu: {{ .Values.cluster.resourceRequests.workerCPU }}
         env:
-          - name: WORKER_ID_SELF
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: POD_TYPE
-            value: "etl"
+        - name: USERNAME
+          value: {{ .Values.cluster.username }}
+        - name: NAMESPACE
+          value: {{ .Values.cluster.namespace }}
+        - name: WORKER_ID_SELF
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_TYPE
+          value: "etl"
         volumeMounts:
         - name: cerebro-repo
           mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}

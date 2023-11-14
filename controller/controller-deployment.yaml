@@ -77,6 +77,10 @@ spec:
         env:
         - name: ML_METRICS_LOGDIR
           value: {{ .Values.controller.volumes.metricsMountPath }}
+        - name: USERNAME
+          value: {{ .Values.cluster.username }}
+        - name: NAMESPACE
+          value: {{ .Values.cluster.namespace }}
         volumeMounts:
         - name: cerebro-repo
           mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
