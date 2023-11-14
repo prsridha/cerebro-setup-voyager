@@ -47,6 +47,10 @@ spec:
         ports:
           - containerPort: {{ .Values.worker.rpcPort }}
         env:
+        - name: USERNAME
+          value: {{ .Values.cluster.username }}
+        - name: NAMESPACE
+          value: {{ .Values.cluster.namespace }}
         - name: WORKER_ID_SELF
           valueFrom:
               fieldRef:
