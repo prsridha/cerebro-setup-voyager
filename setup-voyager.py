@@ -31,7 +31,7 @@ def wait_till_delete(namespace, label_selector, v1):
         try:
             pods = v1.list_namespaced_pod(namespace, label_selector=label_selector)
             return len(pods.items) > 0
-        except Exception as e:
+        except Exception as _:
             return False
     while pod_exists():
         time.sleep(2)
@@ -100,6 +100,7 @@ class CerebroInstaller:
         # make configmap of select values.yaml values
         configmap_values = {
             "username": self.values_yaml["cluster"]["username"],
+            "namespace": self.values_yaml["cluster"]["namespace"],
             "controller_data_path": self.values_yaml["controller"]["volumes"]["dataPath"],
             "worker_rpc_port": self.values_yaml["worker"]["rpcPort"],
             "user_repo_path": self.values_yaml["controller"]["volumes"]["userRepoPath"],
