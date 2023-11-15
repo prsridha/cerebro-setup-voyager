@@ -8,9 +8,9 @@ controller:
     baseHostPath: /voyager/ceph/users/*username/volumes
   git:
     cerebroRepoBranch: v0.1
-    cerebroRepoURL: https://github.com/prsridha/cerebro-voyager.git
-    image: 782408612084.dkr.ecr.ca-central-1.amazonaws.com/cerebro-kube:latest
-    gitSyncImage: 782408612084.dkr.ecr.ca-central-1.amazonaws.com/git-sync:latest
+    cerebroRepoURL: https://github.com/prsridha/cerebro-core.git
+    image: prsridha/cerebro-core:latest
+    gitSyncImage: prsridha/git-sync:latest
   services:
     lokiPort: 3100
     jupyterPort: 8888
@@ -39,8 +39,7 @@ worker:
   rpcPort: 7777
   sampleSize: 0.01
   shardMultiplicity: 4
-  workerDataPath: /cerebro_data_storage_worker
-  workerDataHostPath: /mnt/cerebro_data_storage_worker
+  workerDataPath: /data_storage_worker
 server:
   uiPort: 80
   backendPort: 8083
