@@ -112,7 +112,7 @@ spec:
           type: DirectoryOrCreate
       - name: metrics-storage
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.metricsMountPath }}"
+          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.metricsPath }}"
           type: DirectoryOrCreate
       - name: data-storage
         hostPath:
