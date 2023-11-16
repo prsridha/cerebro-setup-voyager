@@ -49,9 +49,9 @@ class CerebroInstaller:
             self.values_yaml = yaml.safe_load(yaml_file)
             
         # get username and update in values YAML file
-        if "<username>" in self.values_yaml["user"]["username"]:
+        if "<username>" in self.values_yaml["cluster"]["username"]:
             username = run("whoami")
-            self.values_yaml["user"]["username"] = self.values_yaml["user"]["username"].repalce("<username>", username)
+            self.values_yaml["cluster"]["username"] = self.values_yaml["cluster"]["username"].repalce("<username>", username)
             with open("values.yaml", "w") as f:
                 yaml.safe_dump(self.values_yaml, f)
         
@@ -72,7 +72,7 @@ class CerebroInstaller:
                 --set global.redis.password=cerebro \
                 --set disableCommands[0]= \
                 --set disableCommands[1]= \
-                --wait".format(self.namespace, self.username)
+                --wait".format(self.username, self.namespace)
         ]
 
         for cmd in cmds:
@@ -99,7 +99,7 @@ class CerebroInstaller:
 
         # make configmap of select values.yaml values
         configmap_values = {
-            "username": self.values_yaml["cluster"]["username"],
+            "username": self.username,
             "namespace": self.values_yaml["cluster"]["namespace"],
             "controller_data_path": self.values_yaml["controller"]["volumes"]["dataPath"],
             "worker_rpc_port": self.values_yaml["worker"]["rpcPort"],
