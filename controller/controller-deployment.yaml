@@ -41,32 +41,13 @@ spec:
                     - cerebro-controller
               topologyKey: kubernetes.io/hostname
       serviceAccountName: {{ .Values.cluster.username }}
-      initContainers:
-      - name: git-sync
-        image: {{ .Values.controller.git.gitSyncImage }}
-        imagePullPolicy: Always
-        volumeMounts:
-        - name: cerebro-repo
-          mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
-        env:
-        - name: GIT_SYNC_DIR
-          value: cerebro-core
-        - name: GIT_SYNC_REPO
-          value: {{ .Values.controller.git.cerebroRepoURL }}
-        - name: GIT_SYNC_BRANCH
-          value: {{ .Values.controller.git.cerebroRepoBranch }}
-        - name: GIT_SYNC_ROOT
-          value: {{ .Values.controller.volumes.cerebroRepoPath }}
-        - name: GIT_SYNC_SERVER
-          value: {{ .Values.creds.gitServer }}
-        securityContext:
-          runAsUser: 0
       containers:
       - name: controller
-        image: {{ .Values.controller.git.image }}
+        image: {{ .Values.controller.image.core }}
         imagePullPolicy: Always
-        command: [ "/bin/bash", "/cerebro-repo/cerebro-core/init.sh"]
-        workingDir: /cerebro-repo/cerebro-core
+        workingDir: /cerebro-core
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "/sync.sh; /cerebro-core/init.sh"]
         resources:
           limits:
             cpu: {{ .Values.cluster.resourceLimits.controllerMemory }}
@@ -75,6 +56,12 @@ spec:
             cpu: {{ .Values.cluster.resourceRequests.controllerMemory }}
             memory: {{ .Values.cluster.resourceRequests.controllerCPU }}
         env:
+        - name: PLATFORM
+          value: {{ .Values.controller.image.platform }}
+        - name: GIT_SYNC_REPO
+          value: {{ .Values.controller.image.gitURL }}
+        - name: GIT_SYNC_BRANCH
+          value: {{ .Values.controller.image.gitBranch }}
         - name: ML_METRICS_LOGDIR
           value: {{ .Values.controller.volumes.metricsMountPath }}
         - name: USERNAME
@@ -82,10 +69,8 @@ spec:
         - name: NAMESPACE
           value: {{ .Values.cluster.namespace }}
         volumeMounts:
-        - name: cerebro-repo
-          mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
-        - name: user-repo
-          mountPath: {{ .Values.controller.volumes.userRepoPath }}
+        - name: user-code
+          mountPath: {{ .Values.controller.volumes.userCodePath }}
         - name: checkpoint-storage
           mountPath: {{ .Values.controller.volumes.checkpointPath }}
         - name: data-storage
@@ -98,11 +83,7 @@ spec:
         - containerPort: {{ .Values.controller.services.tensorboardPort }}
           name: tnsrbrd-port
       volumes:
-      - name: cerebro-repo
-        hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.cerebroRepoPath }}"
-          type: DirectoryOrCreate
-      - name: user-repo
+      - name: user-code
         hostPath:
           path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.userRepoPath }}"
           type: DirectoryOrCreate

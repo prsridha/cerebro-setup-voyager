@@ -1,1 +1,0 @@
-mkdir  /voyager/ceph/users/prsridha/volumes

@@ -31,10 +31,11 @@ spec:
       serviceAccountName: {{ .Values.cluster.username }}
       containers:
       - name: mop-container
-        image: {{ .Values.controller.git.image }}
+        image: {{ .Values.controller.image.core }}
         imagePullPolicy: Always
-        command: [ "/bin/bash", "/cerebro-repo/cerebro-core/mop/run_mop.sh"]
-        workingDir: /cerebro-repo/cerebro-core
+        workingDir: /cerebro-core
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "/sync.sh; /cerebro-core/mop/run_mop.sh" ]
         resources:
           limits:
             habana.ai/gaudi: {{ .Values.cluster.resourceLimits.workerGPU }}
@@ -47,6 +48,12 @@ spec:
         ports:
           - containerPort: {{ .Values.worker.rpcPort }}
         env:
+        - name: PLATFORM
+          value: {{ .Values.controller.image.platform }}
+        - name: GIT_SYNC_REPO
+          value: {{ .Values.controller.image.gitURL }}
+        - name: GIT_SYNC_BRANCH
+          value: {{ .Values.controller.image.gitBranch }}
         - name: USERNAME
           value: {{ .Values.cluster.username }}
         - name: NAMESPACE
@@ -60,10 +67,8 @@ spec:
         volumeMounts:
         - name: dshm
           mountPath: /dev/shm
-        - name: cerebro-repo
-          mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
-        - name: user-repo
-          mountPath: {{ .Values.controller.volumes.userRepoPath }}
+        - name: user-code
+          mountPath: {{ .Values.controller.volumes.userCodePath }}
         - name: data-storage-worker
           subPathExpr: $(WORKER_ID_SELF)
           mountPath: {{ .Values.worker.workerDataPath }}
@@ -77,17 +82,13 @@ spec:
       - name: dshm
         emptyDir:
           medium: Memory
-      - name: cerebro-repo
-        hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.cerebroRepoPath }}"
-          type: DirectoryOrCreate
-      - name: user-repo
+      - name: user-code
         hostPath:
           path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.userRepoPath }}"
           type: DirectoryOrCreate
       - name: data-storage-worker
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }:}/worker_storage"
+          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.worker.workerDataPath }}"
           type: DirectoryOrCreate
       - name: data-storage
         hostPath:

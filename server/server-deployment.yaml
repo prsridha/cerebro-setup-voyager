@@ -1,4 +1,4 @@
-# Controller Deployment
+# Server Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,13 +39,13 @@ spec:
                     values:
                     - cerebro-controller
               topologyKey: kubernetes.io/hostname
-      initContainers:
       containers:
       - name: server-container
-        image: {{ .Values.controller.git.image }}
+        image: {{ .Values.controller.image.core }}
         imagePullPolicy: Always
-        command: [ "/bin/bash", "/cerebro-repo/cerebro-core/server/run_server.sh"]
-        workingDir: /cerebro-repo/cerebro-core/server
+        workingDir: /cerebro-core/server
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "/sync.sh; /cerebro-core/server/run_server.sh" ]
         resources:
           requests:
             cpu: 4
@@ -54,11 +54,19 @@ spec:
             cpu: 8
             memory: 16Gi
         env:
+        - name: PLATFORM
+          value: { { .Values.controller.image.platform } }
+        - name: GIT_SYNC_REPO
+          value: { { .Values.controller.image.gitURL } }
+        - name: GIT_SYNC_BRANCH
+          value: { { .Values.controller.image.gitBranch } }
+        - name: USERNAME
+          value: { { .Values.cluster.username } }
+        - name: NAMESPACE
+          value: { { .Values.cluster.namespace } }
         - name: POD_TYPE
           value: "server"
         volumeMounts:
-        - name: cerebro-repo
-          mountPath: {{ .Values.controller.volumes.cerebroRepoPath }}
         - name: data
           mountPath: {{ .Values.server.dataPath }}
         ports:
@@ -67,11 +75,22 @@ spec:
         - name: s-nodeport
           containerPort: {{ .Values.server.serverNodePort }}
       - name: ui-container
-        image: {{ .Values.controller.git.image }}
+        image: {{ .Values.controller.image.core }}
         imagePullPolicy: Always
-        command: [ "/bin/bash", "/cerebro-repo/cerebro-core/web_ui/run_ui.sh"]
-        workingDir: /cerebro-repo/cerebro-core/web_ui
+        workingDir: /cerebro-core/ui
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "/sync.sh; /cerebro-core/ui/run_ui.sh" ]
         env:
+        - name: PLATFORM
+          value: { { .Values.controller.image.platform } }
+        - name: GIT_SYNC_REPO
+          value: { { .Values.controller.image.gitURL } }
+        - name: GIT_SYNC_BRANCH
+          value: { { .Values.controller.image.gitBranch } }
+        - name: USERNAME
+          value: { { .Values.cluster.username } }
+        - name: NAMESPACE
+          value: { { .Values.cluster.namespace } }
         - name: POD_TYPE
           value: "web_ui"
         - name: HOST
@@ -87,9 +106,5 @@ spec:
         - containerPort: {{ .Values.server.uiNodePort }}
           name: ui-nodeport
       volumes:
-      - name: cerebro-repo
-        hostPath:
-          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.cerebroRepoPath }}
-          type: DirectoryOrCreate
       - name: data
         emptyDir: {}

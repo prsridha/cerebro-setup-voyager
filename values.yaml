@@ -1,16 +1,15 @@
 controller:
   volumes:
-    userRepoPath: /user-repo
+    userCodePath: /user
     dataPath: /data/data_storage
-    cerebroRepoPath: /cerebro-repo
     metricsPath: /data/metrics_storage
     checkpointPath: /data/checkpoint_storage
     baseHostPath: /voyager/ceph/users/*username/volumes
-  git:
-    cerebroRepoBranch: v0.1
-    cerebroRepoURL: https://github.com/prsridha/cerebro-core.git
-    image: prsridha/cerebro-core:latest
-    gitSyncImage: prsridha/git-sync:latest
+  image:
+    platform: dev
+    gitBranch: v0.1
+    gitURL: https://github.com/prsridha/cerebro-core.git
+    core: prsridha/cerebro-core:latest
   services:
     lokiPort: 3100
     jupyterPort: 8888
