@@ -47,14 +47,14 @@ class CerebroInstaller:
         # read values YAML file
         with open('values.yaml', 'r') as yaml_file:
             self.values_yaml = yaml.safe_load(yaml_file)
-            
+
         # get username and update in values YAML file
         if "<username>" in self.values_yaml["cluster"]["username"]:
             username = run("whoami")
             self.values_yaml["cluster"]["username"] = self.values_yaml["cluster"]["username"].replace("<username>", username)
             with open("values.yaml", "w") as f:
                 yaml.safe_dump(self.values_yaml, f)
-        
+
         # set commonly used values
         self.username = run("whoami")
         self.namespace = self.values_yaml["cluster"]["namespace"]
@@ -67,11 +67,13 @@ class CerebroInstaller:
             "helm repo update",
             "helm install {}-redis bitnami/redis \
                 --namespace {} \
-                --set master.nodeSelector.brightcomputing.com/node-category=goya \
                 --set architecture=standalone \
                 --set global.redis.password=cerebro \
                 --set disableCommands[0]= \
                 --set disableCommands[1]= \
+                --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=brightcomputing.com/node-category \
+                --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
+                --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=goya \
                 --wait".format(self.username, self.namespace)
         ]
 
@@ -221,9 +223,9 @@ class CerebroInstaller:
 
         # clean up Workers
         try:
-            cmd1 = "helm delete {}-etl-worker".format(self.username)
+            cmd1 = "helm delete {}-etl-worker -n {}".format(self.username, self.namespace)
             run(cmd1, capture_output=False)
-            cmd2 = "helm delete {}-mop-worker".format(self.username)
+            cmd2 = "helm delete {}-mop-worker -n {}".format(self.username, self.namespace)
             run(cmd2, capture_output=False)
 
             etl_label_selector = "app=cerebro-etl-worker,user={}".format(self.username)
@@ -238,7 +240,7 @@ class CerebroInstaller:
 
         # clean up Key-Value-Store (not checking if deleted!)
         try:
-            cmd3 = "helm delete {}-redis".format(self.username)
+            cmd3 = "helm delete {}-redis -n {}".format(self.username, self.namespace)
             run(cmd3, capture_output=False, halt_exception=False)
             time.sleep(5)
         except Exception as _:
@@ -247,7 +249,7 @@ class CerebroInstaller:
 
         # clean up Controller
         try:
-            cmd4 = "helm delete {}-controller".format(self.username)
+            cmd4 = "helm delete {}-controller -n {}".format(self.username, self.namespace)
             run(cmd4, halt_exception=False)
             label_selector = "app=cerebro-controller,user={}".format(self.username)
             wait_till_delete(self.namespace, label_selector, v1)
@@ -257,7 +259,7 @@ class CerebroInstaller:
 
         # clean up server
         try:
-            cmd5 = "helm delete {}-server".format(self.username)
+            cmd5 = "helm delete {}-server -n {}".format(self.username, self.namespace)
             run(cmd5, halt_exception=False)
             label_selector = "app=cerebro-server,user={}".format(self.username)
             wait_till_delete(self.namespace, label_selector, v1)
