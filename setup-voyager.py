@@ -51,7 +51,7 @@ class CerebroInstaller:
         # get username and update in values YAML file
         if "<username>" in self.values_yaml["cluster"]["username"]:
             username = run("whoami")
-            self.values_yaml["cluster"]["username"] = self.values_yaml["cluster"]["username"].repalce("<username>", username)
+            self.values_yaml["cluster"]["username"] = self.values_yaml["cluster"]["username"].replace("<username>", username)
             with open("values.yaml", "w") as f:
                 yaml.safe_dump(self.values_yaml, f)
         
