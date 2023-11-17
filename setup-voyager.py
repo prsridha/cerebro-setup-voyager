@@ -157,7 +157,7 @@ class CerebroInstaller:
             "mkdir -p charts",
             "helm create charts/cerebro-etl-worker",
             "rm -rf charts/cerebro-etl-worker/templates/*",
-            "cp worker/* charts/cerebro-etl-worker/templates/",
+            "cp etl-worker/* charts/cerebro-etl-worker/templates/",
             "cp values.yaml charts/cerebro-etl-worker/values.yaml",
             "helm install --namespace={} {}-etl-worker charts/cerebro-etl-worker".format(self.namespace, self.username),
             "rm -rf charts"
@@ -174,7 +174,7 @@ class CerebroInstaller:
             "mkdir -p charts",
             "helm create charts/cerebro-mop-worker",
             "rm -rf charts/cerebro-mop-worker/templates/*",
-            "cp worker/* charts/cerebro-mop-worker/templates/",
+            "cp mop-worker/* charts/cerebro-mop-worker/templates/",
             "cp values.yaml charts/cerebro-mop-worker/values.yaml",
             "helm install --namespace={} {}-mop-worker charts/cerebro-mop-worker".format(self.namespace, self.username),
             "rm -rf charts"
