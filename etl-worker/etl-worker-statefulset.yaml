@@ -17,6 +17,7 @@ spec:
         app: cerebro-etl-worker
         user: {{ .Values.cluster.username }}
     spec:
+      serviceName: {{ .Values.user.username }}-etlworkersvc
       hostname: $WORKER_ID_SELF
       affinity:
         nodeAffinity:

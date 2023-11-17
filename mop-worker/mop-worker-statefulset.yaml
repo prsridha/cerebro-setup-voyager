@@ -18,6 +18,7 @@ spec:
         app: cerebro-mop-worker
         user: {{ .Values.cluster.username }}
     spec:
+      serviceName: {{ .Values.cluster.username }}-mopworkersvc
       hostname: $WORKER_ID_SELF
       affinity:
         nodeAffinity:
