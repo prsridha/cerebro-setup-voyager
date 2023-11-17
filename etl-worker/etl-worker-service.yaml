@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.user.username }}-etlheadlesssvc
+  namespace: {{ .Values.cluster.namespace }}
+  labels:
+    app: cerebro-worker-svc
+    user: {{ .Values.user.username }}
+spec:
+  selector:
+    app: cerebro-etl-worker
+    user: {{ .Values.user.username }}
+  clusterIP: None
