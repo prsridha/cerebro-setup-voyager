@@ -50,11 +50,11 @@ spec:
         args: [ "/sync.sh; /cerebro-core/init.sh"]
         resources:
           limits:
-            cpu: {{ .Values.cluster.resourceLimits.controllerMemory }}
-            memory: {{ .Values.cluster.resourceLimits.controllerCPU }}
+            cpu: {{ .Values.cluster.resourceLimits.controllerCPU }}
+            memory: {{ .Values.cluster.resourceLimits.controllerMemory }}
           requests:
-            cpu: {{ .Values.cluster.resourceRequests.controllerMemory }}
-            memory: {{ .Values.cluster.resourceRequests.controllerCPU }}
+            cpu: {{ .Values.cluster.resourceRequests.controllerCPU }}
+            memory: {{ .Values.cluster.resourceRequests.controllerMemory }}
         env:
         - name: PLATFORM
           value: {{ .Values.controller.image.platform }}
@@ -63,7 +63,7 @@ spec:
         - name: GIT_SYNC_BRANCH
           value: {{ .Values.controller.image.gitBranch }}
         - name: ML_METRICS_LOGDIR
-          value: {{ .Values.controller.volumes.metricsMountPath }}
+          value: {{ .Values.controller.volumes.metricsPath }}
         - name: USERNAME
           value: {{ .Values.cluster.username }}
         - name: NAMESPACE
@@ -85,17 +85,17 @@ spec:
       volumes:
       - name: user-code
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.userRepoPath }}"
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userRepoPath }}
           type: DirectoryOrCreate
       - name: checkpoint-storage
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.checkpointPath }}"
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.checkpointPath }}
           type: DirectoryOrCreate
       - name: metrics-storage
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.metricsPath }}"
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.metricsPath }}
           type: DirectoryOrCreate
       - name: data-storage
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.dataPath }}"
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
           type: DirectoryOrCreate
