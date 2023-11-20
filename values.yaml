@@ -4,7 +4,7 @@ controller:
     dataPath: /data/data_storage
     metricsPath: /data/metrics_storage
     checkpointPath: /data/checkpoint_storage
-    baseHostPath: /voyager/ceph/users/*username/volumes
+    baseHostPath: /voyager/ceph/users/<username>/volumes
   image:
     platform: dev
     gitBranch: v0.1
@@ -33,7 +33,7 @@ cluster:
     workerCPU: 48
     workerGPU: 4
   numWorkers: 2
-  username: &username <username>
+  username: <username>
 worker:
   rpcPort: 7777
   sampleSize: 0.01
