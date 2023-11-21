@@ -22,13 +22,13 @@ cluster:
   namespace: default
   resourceRequests:
     controllerMemory: 16G
-    controllerCPU: 8
+    controllerCPU: 2
     workerMemory: 64G
     workerCPU: 48
     workerGPU: 4
   resourceLimits:
     controllerMemory: 32G
-    controllerCPU: 16
+    controllerCPU: 2
     workerMemory: 120G
     workerCPU: 48
     workerGPU: 4
