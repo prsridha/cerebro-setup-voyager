@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.cluster.namespace }}
 spec:
   podManagementPolicy: Parallel
-  serviceName: {{ .Values.cluster.username }}-workersvc
+  serviceName: {{ .Values.cluster.username }}-mopworkersvc
   replicas: 0
   selector:
     matchLabels:
@@ -18,7 +18,6 @@ spec:
         app: cerebro-mop-worker
         user: {{ .Values.cluster.username }}
     spec:
-      serviceName: {{ .Values.cluster.username }}-mopworkersvc
       hostname: $WORKER_ID_SELF
       affinity:
         nodeAffinity:
@@ -36,7 +35,7 @@ spec:
         imagePullPolicy: Always
         workingDir: /cerebro-core
         command: [ "/bin/bash", "-c", "--" ]
-        args: [ "/sync.sh; /cerebro-core/mop/run_mop.sh" ]
+        args: [ "/sync.sh; /cerebro-core/cerebro/mop/run_mop.sh" ]
         resources:
           limits:
             habana.ai/gaudi: {{ .Values.cluster.resourceLimits.workerGPU }}
