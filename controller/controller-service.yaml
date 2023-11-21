@@ -15,7 +15,7 @@ spec:
     - port: {{ .Values.controller.services.jupyterPort }}
       targetPort: {{ .Values.controller.services.jupyterPort }}
       nodePort: {{ .Values.controller.services.jupyterNodePort }}
-  type: NodePort
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
@@ -34,4 +34,4 @@ spec:
     - port: {{ .Values.controller.services.tensorboardPort }}
       targetPort: {{ .Values.controller.services.tensorboardPort }}
       nodePort: {{ .Values.controller.services.tensorboardNodePort }}
-  type: NodePort
+  type: ClusterIP
