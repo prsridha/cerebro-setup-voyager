@@ -85,7 +85,7 @@ spec:
       volumes:
       - name: user-code
         hostPath:
-          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userRepoPath }}
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userCodePath }}
           type: DirectoryOrCreate
       - name: checkpoint-storage
         hostPath:
