@@ -17,7 +17,7 @@ spec:
         app: cerebro-etl-worker
         user: {{ .Values.cluster.username }}
     spec:
-      serviceName: {{ .Values.user.username }}-etlworkersvc
+      serviceName: {{ .Values.cluster.username }}-etlworkersvc
       hostname: $WORKER_ID_SELF
       affinity:
         nodeAffinity:
@@ -71,13 +71,13 @@ spec:
       volumes:
       - name: user-code
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.userRepoPath }}"
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userCodePath }}
           type: DirectoryOrCreate
       - name: data-storage
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.controller.volumes.dataPath }}"
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
           type: DirectoryOrCreate
       - name: data-storage-worker
         hostPath:
-          path: "{{ .Values.controller.volumes.baseHostPath }}:{{ .Values.worker.workerDataPath }}"
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.worker.workerDataPath }}
           type: DirectoryOrCreate
