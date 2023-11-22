@@ -252,7 +252,7 @@ class CerebroInstaller:
 
         # clean up Controller
         try:
-            cmd4 = "helm delete {}-controller -n {}".format(self.username, self.namespace)
+            cmd4 = "helm delete {}-cerebro-controller -n {}".format(self.username, self.namespace)
             run(cmd4, halt_exception=False)
             label_selector = "app=cerebro-controller,user={}".format(self.username)
             wait_till_delete(self.namespace, label_selector, v1)
