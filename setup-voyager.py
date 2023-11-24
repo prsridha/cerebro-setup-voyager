@@ -260,7 +260,7 @@ class CerebroInstaller:
                     {
                         "name": "cleanup-volume",
                         "image": "ubuntu",
-                        "command": ["/bin/bash", "-c", "rm -rf /mnt/volumes"],
+                        "command": ["/bin/bash", "-c", "rm -rf /mnt/*"],
                         "volumeMounts": [
                             {
                                 "name": "cerebro-volume",
