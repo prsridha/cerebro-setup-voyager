@@ -20,6 +20,7 @@ controller:
     tensorboardNodePort: 30999
 cluster:
   namespace: default
+  jupyterTokenSting: projectcerebro
   resourceRequests:
     controllerMemory: 16G
     controllerCPU: 2

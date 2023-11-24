@@ -131,12 +131,12 @@ class CerebroInstaller:
             "worker_rpc_port": self.values_yaml["worker"]["rpcPort"],
             "user_code_path": self.values_yaml["controller"]["volumes"]["userCodePath"],
             "server_backend_port": self.values_yaml["server"]["backendPort"],
-            "jupyter_token_string": self.values_yaml["creds"]["jupyterTokenSting"],
+            "jupyter_token_string": self.values_yaml["cluster"]["jupyterTokenSting"],
             "jupyter_node_port": self.values_yaml["controller"]["services"]["jupyterNodePort"],
             "tensorboard_node_port": self.values_yaml["controller"]["services"]["tensorboardNodePort"],
-            "grafana_node_port": self.values_yaml["cluster"]["networking"]["grafanaNodePort"],
-            "prometheus_node_port": self.values_yaml["cluster"]["networking"]["prometheusNodePort"],
-            "loki_port": self.values_yaml["cluster"]["networking"]["lokiPort"],
+            "grafana_node_port": self.values_yaml["cluster"]["services"]["grafanaNodePort"],
+            "prometheus_node_port": self.values_yaml["cluster"]["services"]["prometheusNodePort"],
+            "loki_port": self.values_yaml["cluster"]["services"]["lokiPort"],
             "shard_multiplicity": self.values_yaml["worker"]["shardMultiplicity"],
             "sample_size": self.values_yaml["worker"]["sampleSize"],
         }
@@ -351,18 +351,17 @@ class CerebroInstaller:
             print("Got error while cleaning up Server: " + str(e))
 
         # cleanUp ConfigMaps
-        configmaps_to_delete = ["{}-cerebro-info".format(self.username)]
-        for configmap_name in configmaps_to_delete:
-            try:
-                # Delete the ConfigMap
-                v1.delete_namespaced_config_map(
-                    name=configmap_name,
-                    namespace=self.namespace,
-                    body=client.V1DeleteOptions(),
-                )
-                print(f"ConfigMap '{configmap_name}' deleted successfully.")
-            except Exception as e:
-                print(f"Error deleting ConfigMap '{configmap_name}': {e}")
+        configmap_name = "{}-cerebro-info".format(self.username)
+        try:
+            # Delete the ConfigMap
+            v1.delete_namespaced_config_map(
+                name=configmap_name,
+                namespace=self.namespace,
+                body=client.V1DeleteOptions(),
+            )
+            print(f"ConfigMap '{configmap_name}' deleted successfully.")
+        except Exception as e:
+            print(f"Error deleting ConfigMap '{configmap_name}': {e}")
 
         # clear out hostPath Volumes
         try:
@@ -370,6 +369,7 @@ class CerebroInstaller:
             print("Root Volumes successfully deleted.")
         except Exception as e:
             print(f"Error: {e}")
+
         print("Uninstalled Cerebro!")
 
     def testing(self):
