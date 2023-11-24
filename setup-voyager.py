@@ -65,20 +65,14 @@ class CerebroInstaller:
 
     def install_kvs(self):
         # schedule KVS with username prefixed, on any Goya compute node
+        config_path = "misc/redis.yaml"
         cmds = [
             "helm repo add bitnami https://charts.bitnami.com/bitnami",
             "helm repo update",
             "helm install {}-redis bitnami/redis \
                 --namespace {} \
-                --set architecture=standalone \
-                --set global.redis.password=cerebro \
-                --set disableCommands[0]= \
-                --set disableCommands[1]= \
-                --set master.persistence.medium=emptyDir \
-                --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=brightcomputing.com/node-category \
-                --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
-                --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=goya \
-                --wait".format(self.username, self.namespace)
+                -f {} \
+                --wait".format(self.username, self.namespace, config_path)
         ]
 
         for cmd in cmds:
