@@ -84,6 +84,23 @@ class CerebroInstaller:
         config.load_kube_config()
         v1 = client.CoreV1Api()
 
+        # add RBAC to pods
+        cmds = [
+            "mkdir -p charts",
+            "helm create charts/cerebro-rbac",
+            "rm -rf charts/cerebro-rbac/templates/*",
+            "cp misc/rbac.yaml charts/cerebro-rbac/templates/",
+            "cp values.yaml charts/cerebro-rbac/values.yaml",
+            "helm install --namespace={} {}-rbac charts/cerebro-rbac".format(self.namespace, self.username),
+            "rm -rf charts"
+        ]
+
+        for cmd in cmds:
+            time.sleep(0.5)
+            run(cmd, capture_output=False)
+
+        print("Role Based Access Controls created successfully")
+
         # add hardware info configmap
         node_hardware_info = {}
         for i in range(self.num_workers):
@@ -93,7 +110,7 @@ class CerebroInstaller:
             }
 
         # create node hardware info configmap
-        configmap = client.V1ConfigMap(data={"data": json.dumps(node_hardware_info)}, metadata=client.V1ObjectMeta(name="node-hardware-info"))
+        configmap = client.V1ConfigMap(data={"data": json.dumps(node_hardware_info)}, metadata=client.V1ObjectMeta(name="{}-node-hardware-info".format(self.username)))
         v1.create_namespaced_config_map(namespace=self.namespace, body=configmap)
         print("Created configmap for node hardware info")
 
@@ -103,7 +120,7 @@ class CerebroInstaller:
             "namespace": self.values_yaml["cluster"]["namespace"],
             "controller_data_path": self.values_yaml["controller"]["volumes"]["dataPath"],
             "worker_rpc_port": self.values_yaml["worker"]["rpcPort"],
-            "user_repo_path": self.values_yaml["controller"]["volumes"]["userRepoPath"],
+            "user_repo_path": self.values_yaml["controller"]["volumes"]["userCodePath"],
             "server_backend_port": self.values_yaml["server"]["backendPort"],
             "jupyter_token_string": self.values_yaml["creds"]["jupyterTokenSting"],
             "jupyter_node_port": self.values_yaml["controller"]["services"]["jupyterNodePort"],
@@ -116,7 +133,7 @@ class CerebroInstaller:
         }
 
         # create cerebro info configmap
-        configmap = client.V1ConfigMap(data={"data": json.dumps(configmap_values)}, metadata=client.V1ObjectMeta(name="cerebro-info"))
+        configmap = client.V1ConfigMap(data={"data": json.dumps(configmap_values)}, metadata=client.V1ObjectMeta(name="{}-cerebro-info".format(self.username)))
         v1.create_namespaced_config_map(namespace=self.namespace, body=configmap)
         print("Created configmap for Cerebro values info")
 
