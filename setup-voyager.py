@@ -233,7 +233,7 @@ class CerebroInstaller:
 
     def _delete_hostpath_volumes(self):
         username = self.values_yaml["cluster"]["username"]
-        pod_name = "{}-cleanUp-volume".format(username)
+        pod_name = "{}-cleanup-volume".format(username)
         namespace = self.values_yaml["cluster"]["namespace"]
         host_path = self.values_yaml["controller"]["volumes"]["baseHostPath"]
 
@@ -249,7 +249,7 @@ class CerebroInstaller:
             "spec": {
                 "containers": [
                     {
-                        "name": "cleanUp-volume",
+                        "name": "cleanup-volume",
                         "image": "ubuntu",
                         "command": ["/bin/bash", "-c", "rm -rf /mnt/volumes"],
                         "volumeMounts": [
@@ -340,6 +340,20 @@ class CerebroInstaller:
             print("Cleaned up Server")
         except Exception as e:
             print("Got error while cleaning up Server: " + str(e))
+
+        # cleanUp ConfigMaps
+        configmaps_to_delete = ["{}-cerebro-info".format(self.username), "{}-node-hardware-info".format(self.username)]
+        for configmap_name in configmaps_to_delete:
+            try:
+                # Delete the ConfigMap
+                v1.delete_namespaced_config_map(
+                    name=configmap_name,
+                    namespace=self.namespace,
+                    body=client.V1DeleteOptions(),
+                )
+                print(f"ConfigMap '{configmap_name}' deleted successfully.")
+            except Exception as e:
+                print(f"Error deleting ConfigMap '{configmap_name}': {e}")
 
         # clear out hostPath Volumes
         try:
