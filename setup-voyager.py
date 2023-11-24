@@ -36,6 +36,24 @@ def wait_till_delete(namespace, label_selector, v1):
     while pod_exists():
         time.sleep(2)
 
+def create_rbac(namespace, username):
+    # add RBAC to pods
+    cmds = [
+        "mkdir -p charts",
+        "helm create charts/cerebro-rbac",
+        "rm -rf charts/cerebro-rbac/templates/*",
+        "cp misc/rbac.yaml charts/cerebro-rbac/templates/",
+        "cp values.yaml charts/cerebro-rbac/values.yaml",
+        "helm install --namespace={} {}-rbac charts/cerebro-rbac".format(namespace, username),
+        "rm -rf charts"
+    ]
+
+    for cmd in cmds:
+        time.sleep(0.5)
+        run(cmd, capture_output=False)
+
+    print("Role Based Access Controls created successfully")
+
 
 class CerebroInstaller:
     def __init__(self):
@@ -83,23 +101,6 @@ class CerebroInstaller:
     def init_cerebro(self):
         config.load_kube_config()
         v1 = client.CoreV1Api()
-
-        # add RBAC to pods
-        cmds = [
-            "mkdir -p charts",
-            "helm create charts/cerebro-rbac",
-            "rm -rf charts/cerebro-rbac/templates/*",
-            "cp misc/rbac.yaml charts/cerebro-rbac/templates/",
-            "cp values.yaml charts/cerebro-rbac/values.yaml",
-            "helm install --namespace={} {}-rbac charts/cerebro-rbac".format(self.namespace, self.username),
-            "rm -rf charts"
-        ]
-
-        for cmd in cmds:
-            time.sleep(0.5)
-            run(cmd, capture_output=False)
-
-        print("Role Based Access Controls created successfully")
 
         # add hardware info configmap
         node_hardware_info = {}
