@@ -110,9 +110,17 @@ class CerebroInstaller:
             }
 
         # create node hardware info configmap
-        configmap = client.V1ConfigMap(data={"data": json.dumps(node_hardware_info)}, metadata=client.V1ObjectMeta(name="{}-node-hardware-info".format(self.username)))
-        v1.create_namespaced_config_map(namespace=self.namespace, body=configmap)
-        print("Created configmap for node hardware info")
+        cm_exists = False
+        try:
+            _ = v1.read_namespaced_config_map(name="cerebro-node-hardware-info", namespace=self.namespace)
+            print("Configmap for node hardware info already exists")
+            cm_exists = True
+        except Exception:
+            pass
+        if not cm_exists:
+            configmap = client.V1ConfigMap(data={"data": json.dumps(node_hardware_info)}, metadata=client.V1ObjectMeta(name="cerebro-node-hardware-info"))
+            v1.create_namespaced_config_map(namespace=self.namespace, body=configmap)
+            print("Created configmap for node hardware info")
 
         # make configmap of select values.yaml values
         configmap_values = {
@@ -120,7 +128,7 @@ class CerebroInstaller:
             "namespace": self.values_yaml["cluster"]["namespace"],
             "controller_data_path": self.values_yaml["controller"]["volumes"]["dataPath"],
             "worker_rpc_port": self.values_yaml["worker"]["rpcPort"],
-            "user_repo_path": self.values_yaml["controller"]["volumes"]["userCodePath"],
+            "user_code_path": self.values_yaml["controller"]["volumes"]["userCodePath"],
             "server_backend_port": self.values_yaml["server"]["backendPort"],
             "jupyter_token_string": self.values_yaml["creds"]["jupyterTokenSting"],
             "jupyter_node_port": self.values_yaml["controller"]["services"]["jupyterNodePort"],
@@ -342,7 +350,7 @@ class CerebroInstaller:
             print("Got error while cleaning up Server: " + str(e))
 
         # cleanUp ConfigMaps
-        configmaps_to_delete = ["{}-cerebro-info".format(self.username), "{}-node-hardware-info".format(self.username)]
+        configmaps_to_delete = ["{}-cerebro-info".format(self.username)]
         for configmap_name in configmaps_to_delete:
             try:
                 # Delete the ConfigMap
