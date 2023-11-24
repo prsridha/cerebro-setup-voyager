@@ -74,6 +74,7 @@ class CerebroInstaller:
                 --set global.redis.password=cerebro \
                 --set disableCommands[0]= \
                 --set disableCommands[1]= \
+                --set master.persistence.medium=emptyDir \
                 --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=brightcomputing.com/node-category \
                 --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
                 --set master.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=goya \
@@ -219,6 +220,65 @@ class CerebroInstaller:
             else:
                 time.sleep(1)
 
+    def _delete_hostpath_volumes(self):
+        username = self.values_yaml["cluster"]["username"]
+        pod_name = "{}-cleanUp-volume".format(username)
+        namespace = self.values_yaml["cluster"]["namespace"]
+        host_path = self.values_yaml["controller"]["volumes"]["baseHostPath"]
+
+        pod_manifest = {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "name": pod_name,
+                "labels": {
+                    "user": username
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "cleanUp-volume",
+                        "image": "ubuntu",
+                        "command": ["/bin/bash", "-c", "rm -rf /mnt/volumes"],
+                        "volumeMounts": [
+                            {
+                                "name": "cerebro-volume",
+                                "mountPath": "/mnt"
+                            }
+                        ]
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "cerebro-volume",
+                        "hostPath": {
+                            "path": host_path
+                        }
+                    }
+                ]
+            }
+        }
+
+        # Create the pod
+        config.load_kube_config()
+        v1 = client.CoreV1Api()
+        v1.create_namespaced_pod(body=pod_manifest, namespace=namespace)
+
+        while True:
+            pod = v1.read_namespaced_pod_status(name=pod_name, namespace=namespace)
+            pod_phase = pod.status.phase
+
+            if pod_phase == "Succeeded":
+                print(f"Pod {pod_name} has completed its task. Deleting the pod.")
+                v1.delete_namespaced_pod(name=pod_name, namespace=namespace)
+                break
+            elif pod_phase == "Failed":
+                print(f"Pod {pod_name} failed. Deleting the pod.")
+                v1.delete_namespaced_pod(name=pod_name, namespace=namespace)
+                break
+            time.sleep(2)
+
     def shutdown_cerebro(self):
         # load kubernetes config
         config.load_kube_config()
@@ -271,13 +331,11 @@ class CerebroInstaller:
             print("Got error while cleaning up Server: " + str(e))
 
         # clear out hostPath Volumes
-        root_host_path = self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("*username", self.username)
         try:
-            os.rmdir(root_host_path)
+            self._delete_hostpath_volumes()
             print("Root Volumes successfully deleted.")
-        except OSError as e:
+        except Exception as e:
             print(f"Error: {e}")
-
         print("Uninstalled Cerebro!")
 
     def testing(self):
