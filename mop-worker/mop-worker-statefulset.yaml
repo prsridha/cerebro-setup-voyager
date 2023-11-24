@@ -78,6 +78,8 @@ spec:
           mountPath: {{ .Values.controller.volumes.metricsPath }}
         - name: checkpoint-storage
           mountPath: {{ .Values.controller.volumes.checkpointPath }}
+        - name: kube-config-volume
+          mountPath: /root/.kube/config
       volumes:
       - name: dshm
         emptyDir:
@@ -102,3 +104,7 @@ spec:
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.checkpointPath }}
           type: DirectoryOrCreate
+      - name: kube-config-volume
+        hostPath:
+          path: "/home/{{ .Values.cluster.username }}/.kube/config"
+          type: File

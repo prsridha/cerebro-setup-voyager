@@ -77,6 +77,8 @@ spec:
           mountPath: {{ .Values.controller.volumes.dataPath }}
         - name: metrics-storage
           mountPath: {{ .Values.controller.volumes.metricsPath }}
+        - name: kube-config-volume
+          mountPath: /root/.kube/config
         ports:
         - containerPort: {{ .Values.controller.services.jupyterPort }}
           name: jupyter-port
@@ -99,3 +101,7 @@ spec:
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
           type: DirectoryOrCreate
+      - name: kube-config-volume
+        hostPath:
+          path: "/home/{{ .Values.cluster.username }}/.kube/config"
+          type: File

@@ -68,6 +68,8 @@ spec:
         - name: data-storage-worker
           subPathExpr: $(WORKER_ID_SELF)
           mountPath: {{ .Values.worker.workerDataPath }}
+        - name: kube-config-volume
+          mountPath: /root/.kube/config
       volumes:
       - name: user-code
         hostPath:
@@ -81,3 +83,7 @@ spec:
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.worker.workerDataPath }}
           type: DirectoryOrCreate
+      - name: kube-config-volume
+        hostPath:
+          path: "/home/{{ .Values.cluster.username }}/.kube/config"
+          type: File

@@ -69,6 +69,8 @@ spec:
         volumeMounts:
         - name: data
           mountPath: {{ .Values.server.dataPath }}
+        - name: kube-config-volume
+          mountPath: /root/.kube/config
         ports:
         - name: server-port
           containerPort: {{ .Values.server.serverPort }}
@@ -108,3 +110,7 @@ spec:
       volumes:
       - name: data
         emptyDir: {}
+      - name: kube-config-volume
+        hostPath:
+          path: "/home/{{ .Values.cluster.username }}/.kube/config"
+          type: File
