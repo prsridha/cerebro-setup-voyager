@@ -5,4 +5,4 @@ pip install pip --upgrade
 pip install pyopenssl --upgrade
 
 # add Cerebro installer's dependencies
-pip install -r requirements.txt --user
+pip install -r ../requirements.txt --user
