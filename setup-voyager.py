@@ -134,9 +134,9 @@ class CerebroInstaller:
             "jupyter_token_string": self.values_yaml["cluster"]["jupyterTokenSting"],
             "jupyter_node_port": self.values_yaml["controller"]["services"]["jupyterNodePort"],
             "tensorboard_node_port": self.values_yaml["controller"]["services"]["tensorboardNodePort"],
-            "grafana_node_port": self.values_yaml["cluster"]["services"]["grafanaNodePort"],
-            "prometheus_node_port": self.values_yaml["cluster"]["services"]["prometheusNodePort"],
-            "loki_port": self.values_yaml["cluster"]["services"]["lokiPort"],
+            "grafana_node_port": self.values_yaml["controller"]["services"]["grafanaNodePort"],
+            "prometheus_node_port": self.values_yaml["controller"]["services"]["prometheusNodePort"],
+            "loki_port": self.values_yaml["controller"]["services"]["lokiPort"],
             "shard_multiplicity": self.values_yaml["worker"]["shardMultiplicity"],
             "sample_size": self.values_yaml["worker"]["sampleSize"],
         }
