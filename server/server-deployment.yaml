@@ -59,15 +59,17 @@ spec:
             memory: 16Gi
         env:
         - name: PLATFORM
-          value: { { .Values.controller.image.platform } }
+          value: {{ .Values.controller.image.platform }}
+        - name: CLOUD_PROVIDER
+          value: {{ .Values.cluster.cloudProvider }}
         - name: GIT_SYNC_REPO
-          value: { { .Values.controller.image.gitURL } }
+          value: {{ .Values.controller.image.gitURL }}
         - name: GIT_SYNC_BRANCH
-          value: { { .Values.controller.image.gitBranch } }
+          value: {{ .Values.controller.image.gitBranch }}
         - name: USERNAME
-          value: { { .Values.cluster.username } }
+          value: {{ .Values.cluster.username }}
         - name: NAMESPACE
-          value: { { .Values.cluster.namespace } }
+          value: {{ .Values.cluster.namespace }}
         - name: POD_TYPE
           value: "server"
         volumeMounts:
@@ -88,15 +90,15 @@ spec:
         args: [ "/sync.sh; /cerebro-core/ui/run_ui.sh" ]
         env:
         - name: PLATFORM
-          value: { { .Values.controller.image.platform } }
+          value: {{ .Values.controller.image.platform }}
         - name: GIT_SYNC_REPO
-          value: { { .Values.controller.image.gitURL } }
+          value: {{ .Values.controller.image.gitURL }}
         - name: GIT_SYNC_BRANCH
-          value: { { .Values.controller.image.gitBranch } }
+          value: {{ .Values.controller.image.gitBranch }}
         - name: USERNAME
-          value: { { .Values.cluster.username } }
+          value: {{ .Values.cluster.username }}
         - name: NAMESPACE
-          value: { { .Values.cluster.namespace } }
+          value: {{ .Values.cluster.namespace }}
         - name: POD_TYPE
           value: "web_ui"
         - name: HOST

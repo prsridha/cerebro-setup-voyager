@@ -54,6 +54,8 @@ spec:
         env:
         - name: PLATFORM
           value: {{ .Values.controller.image.platform }}
+        - name: CLOUD_PROVIDER
+          value: {{ .Values.cluster.cloudProvider }}
         - name: GIT_SYNC_REPO
           value: {{ .Values.controller.image.gitURL }}
         - name: GIT_SYNC_BRANCH
