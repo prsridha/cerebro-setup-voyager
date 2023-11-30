@@ -1,9 +1,12 @@
 import os
+import pwd
 import json
 import time
 import fire
+import shutil
 import subprocess
 import oyaml as yaml
+from pathlib import Path
 from kubernetes import client, config
 
 
@@ -66,18 +69,30 @@ class CerebroInstaller:
         with open('values.yaml', 'r') as yaml_file:
             self.values_yaml = yaml.safe_load(yaml_file)
 
+        updated = False
+        username = run("whoami")
+
         # get username and update in values YAML file
         if "<username>" in self.values_yaml["cluster"]["username"]:
-            username = run("whoami")
+            updated = True
             self.values_yaml["cluster"]["username"] = self.values_yaml["cluster"]["username"].replace(
                 "<username>", username)
             self.values_yaml["controller"]["volumes"]["baseHostPath"] = (
                 self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", username))
+        if "<uid>" in self.values_yaml["cluster"]["userUID"] or "<gid>" in self.values_yaml["cluster"]["userGID"]:
+            updated = True
+            user_info = pwd.getpwnam(username)
+            uid = user_info.pw_uid
+            gid = user_info.pw_gid
+            self.values_yaml["cluster"]["userUID"] = uid
+            self.values_yaml["cluster"]["userUID"] = gid
+
+        if updated:
             with open("values.yaml", "w") as f:
                 yaml.safe_dump(self.values_yaml, f)
 
         # set commonly used values
-        self.username = run("whoami")
+        self.username = username
         self.namespace = self.values_yaml["cluster"]["namespace"]
         self.num_workers = self.values_yaml["cluster"]["numWorkers"]
 
@@ -145,6 +160,20 @@ class CerebroInstaller:
         configmap = client.V1ConfigMap(data={"data": json.dumps(configmap_values)}, metadata=client.V1ObjectMeta(name="{}-cerebro-info".format(self.username)))
         v1.create_namespaced_config_map(namespace=self.namespace, body=configmap)
         print("Created configmap for Cerebro values info")
+
+        # create directories
+        dirs = []
+        base_path = self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", self.username)
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["dataPath"]))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["metricsPath"]))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["checkpointPath"]))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["userCodePath"]))
+        for i in range(self.values_yaml["cluster"]["numWorkers"]):
+            worker_name = "{}-cerebro-worker-{}".format(self.username, str(i))
+            dirs.append(os.path.join(base_path, self.values_yaml["worker"]["workerDataPath"], worker_name))
+
+        for i in dirs:
+            Path(i).mkdir(parents=True, exist_ok=True)
 
     def create_controller(self):
         cmds = [
@@ -240,65 +269,6 @@ class CerebroInstaller:
             else:
                 time.sleep(1)
 
-    def _delete_hostpath_volumes(self):
-        username = self.values_yaml["cluster"]["username"]
-        pod_name = "{}-cleanup-volume".format(username)
-        namespace = self.values_yaml["cluster"]["namespace"]
-        host_path = self.values_yaml["controller"]["volumes"]["baseHostPath"]
-
-        pod_manifest = {
-            "apiVersion": "v1",
-            "kind": "Pod",
-            "metadata": {
-                "name": pod_name,
-                "labels": {
-                    "user": username
-                }
-            },
-            "spec": {
-                "containers": [
-                    {
-                        "name": "cleanup-volume",
-                        "image": "ubuntu",
-                        "command": ["/bin/bash", "-c", "rm -rf /mnt/*"],
-                        "volumeMounts": [
-                            {
-                                "name": "cerebro-volume",
-                                "mountPath": "/mnt"
-                            }
-                        ]
-                    }
-                ],
-                "volumes": [
-                    {
-                        "name": "cerebro-volume",
-                        "hostPath": {
-                            "path": host_path
-                        }
-                    }
-                ]
-            }
-        }
-
-        # Create the pod
-        config.load_kube_config()
-        v1 = client.CoreV1Api()
-        v1.create_namespaced_pod(body=pod_manifest, namespace=namespace)
-
-        while True:
-            pod = v1.read_namespaced_pod_status(name=pod_name, namespace=namespace)
-            pod_phase = pod.status.phase
-
-            if pod_phase == "Succeeded":
-                print(f"Pod {pod_name} has completed its task. Deleting the pod.")
-                v1.delete_namespaced_pod(name=pod_name, namespace=namespace)
-                break
-            elif pod_phase == "Failed":
-                print(f"Pod {pod_name} failed. Deleting the pod.")
-                v1.delete_namespaced_pod(name=pod_name, namespace=namespace)
-                break
-            time.sleep(2)
-
     def shutdown_cerebro(self):
         # load kubernetes config
         config.load_kube_config()
@@ -364,13 +334,8 @@ class CerebroInstaller:
             print(f"Error deleting ConfigMap '{configmap_name}': {e}")
 
         # clear out hostPath Volumes
-        try:
-            self._delete_hostpath_volumes()
-            print("Root Volumes successfully deleted.")
-        except Exception as e:
-            print(f"Error: {e}")
-
-        print("Uninstalled Cerebro!")
+        base_path = self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", self.username)
+        shutil.rmtree(base_path)
 
     def testing(self):
         pass

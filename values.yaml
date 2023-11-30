@@ -35,6 +35,8 @@ cluster:
     workerGPU: 4
   numWorkers: 2
   username: <username>
+  userUID: <uid>
+  userGID: <gid>
 worker:
   rpcPort: 7777
   sampleSize: 0.01
