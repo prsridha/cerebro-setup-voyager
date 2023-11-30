@@ -19,6 +19,10 @@ spec:
         app: cerebro-server
         user: {{ .Values.user.username }}
     spec:
+      securityContext:
+        runAsUser: {{ .Values.cluster.userUID }}
+        runAsGroup: {{ .Values.cluster.userGID }}
+        fsGroup: {{ .Values..cluster.userGID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .Values.cluster.username }}-cerebro-mop-worker
+  name: {{ .Values.cluster.username }}-cerebro-worker
   namespace: {{ .Values.cluster.namespace }}
 spec:
   podManagementPolicy: Parallel
@@ -19,6 +19,10 @@ spec:
         user: {{ .Values.cluster.username }}
     spec:
       hostname: $WORKER_ID_SELF
+      securityContext:
+        runAsUser: {{ .Values.cluster.userUID }}
+        runAsGroup: {{ .Values.cluster.userGID }}
+        fsGroup: {{ .Values..cluster.userGID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
