@@ -19,7 +19,6 @@ controller:
     prometheusNodePort: 30090
     tensorboardNodePort: 30999
 cluster:
-  cloudProvider: Voyager
   namespace: default
   jupyterTokenSting: projectcerebro
   resourceRequests:
