@@ -75,6 +75,8 @@ spec:
         volumeMounts:
         - name: data
           mountPath: {{ .Values.server.dataPath }}
+        - name: kvs-storage
+          mountPath: {{ .Values.controller.volumes.kvsPath }}
         - name: kube-config-volume
           mountPath: /root/.kube/config
         ports:
@@ -116,6 +118,10 @@ spec:
       volumes:
       - name: data
         emptyDir: {}
+      - name: kvs-storage
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.kvsPath }}
+          type: DirectoryOrCreate
       - name: kube-config-volume
         hostPath:
           path: "/home/{{ .Values.cluster.username }}/.kube/config"

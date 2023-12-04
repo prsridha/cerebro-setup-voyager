@@ -84,6 +84,8 @@ spec:
           mountPath: {{ .Values.controller.volumes.metricsPath }}
         - name: checkpoint-storage
           mountPath: {{ .Values.controller.volumes.checkpointPath }}
+        - name: kvs-storage
+          mountPath: {{ .Values.controller.volumes.kvsPath }}
         - name: kube-config-volume
           mountPath: /root/.kube/config
       volumes:
@@ -109,6 +111,10 @@ spec:
       - name: checkpoint-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.checkpointPath }}
+          type: DirectoryOrCreate
+      - name: kvs-storage
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.kvsPath }}
           type: DirectoryOrCreate
       - name: kube-config-volume
         hostPath:
