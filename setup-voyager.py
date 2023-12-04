@@ -96,23 +96,6 @@ class CerebroInstaller:
         self.namespace = self.values_yaml["cluster"]["namespace"]
         self.num_workers = self.values_yaml["cluster"]["numWorkers"]
 
-    def install_kvs(self):
-        # schedule KVS with username prefixed, on any Goya compute node
-        config_path = "misc/redis.yaml"
-        cmds = [
-            "helm repo add bitnami https://charts.bitnami.com/bitnami",
-            "helm repo update",
-            "helm install {}-redis bitnami/redis \
-                --namespace {} \
-                -f {} \
-                --wait".format(self.username, self.namespace, config_path)
-        ]
-
-        for cmd in cmds:
-            run(cmd)
-
-        print("Installed Redis DB successfully")
-
     def init_cerebro(self):
         config.load_kube_config()
         v1 = client.CoreV1Api()
@@ -291,15 +274,6 @@ class CerebroInstaller:
 
         print("Cleaned up Workers")
 
-        # clean up Key-Value-Store (not checking if deleted!)
-        try:
-            cmd3 = "helm delete {}-redis -n {}".format(self.username, self.namespace)
-            run(cmd3, capture_output=False, halt_exception=False)
-            time.sleep(5)
-        except Exception as _:
-            print("Got an error while cleaning up Key Value Store")
-        print("Cleaned up Key Value Store")
-
         # clean up Controller
         try:
             cmd4 = "helm delete {}-cerebro-controller -n {}".format(self.username, self.namespace)
@@ -341,9 +315,6 @@ class CerebroInstaller:
         pass
 
     def install_cerebro(self):
-        # install Key-Value Store
-        self.install_kvs()
-
         # initialize basic cerebro components
         self.init_cerebro()
 
