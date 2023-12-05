@@ -85,7 +85,7 @@ class CerebroInstaller:
             uid = user_info.pw_uid
             gid = user_info.pw_gid
             self.values_yaml["cluster"]["userUID"] = uid
-            self.values_yaml["cluster"]["userUID"] = gid
+            self.values_yaml["cluster"]["userGID"] = gid
 
         if updated:
             with open("values.yaml", "w") as f:
