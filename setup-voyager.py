@@ -147,13 +147,13 @@ class CerebroInstaller:
         # create directories
         dirs = []
         base_path = self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", self.username)
-        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["dataPath"]))
-        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["metricsPath"]))
-        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["checkpointPath"]))
-        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["userCodePath"]))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["dataPath"].lstrip('/')))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["metricsPath"].lstrip('/')))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["checkpointPath"].lstrip('/')))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["userCodePath"].lstrip('/')))
         for i in range(self.values_yaml["cluster"]["numWorkers"]):
             worker_name = "{}-cerebro-worker-{}".format(self.username, str(i))
-            dirs.append(os.path.join(base_path, self.values_yaml["worker"]["workerDataPath"], worker_name))
+            dirs.append(os.path.join(base_path, self.values_yaml["worker"]["workerDataPath"].lstrip('/'), worker_name))
 
         for i in dirs:
             Path(i).mkdir(parents=True, exist_ok=True)
