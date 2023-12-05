@@ -79,7 +79,7 @@ class CerebroInstaller:
                 "<username>", username)
             self.values_yaml["controller"]["volumes"]["baseHostPath"] = (
                 self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", username))
-        if "<uid>" in self.values_yaml["cluster"]["userUID"] or "<gid>" in self.values_yaml["cluster"]["userGID"]:
+        if not (isinstance(self.values_yaml["cluster"]["userUID"], int) and isinstance(self.values_yaml["cluster"]["userGID"], int)):
             updated = True
             user_info = pwd.getpwnam(username)
             uid = user_info.pw_uid
