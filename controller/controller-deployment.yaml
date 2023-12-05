@@ -23,7 +23,7 @@ spec:
       securityContext:
         runAsUser: {{ .Values.cluster.userUID }}
         runAsGroup: {{ .Values.cluster.userGID }}
-        fsGroup: {{ .Values..cluster.userGID }}
+        fsGroup: {{ .Values.cluster.userGID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
