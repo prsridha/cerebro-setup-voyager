@@ -4,6 +4,7 @@ import json
 import time
 import fire
 import shutil
+import random
 import subprocess
 import oyaml as yaml
 from pathlib import Path
@@ -36,10 +37,13 @@ def wait_till_delete(namespace, label_selector, v1):
             return len(pods.items) > 0
         except Exception as _:
             return False
+
     while pod_exists():
         time.sleep(2)
 
+
 def create_rbac(namespace, username):
+    # currently not being used
     # add RBAC to pods
     cmds = [
         "mkdir -p charts",
@@ -96,17 +100,108 @@ class CerebroInstaller:
         self.namespace = self.values_yaml["cluster"]["namespace"]
         self.num_workers = self.values_yaml["cluster"]["numWorkers"]
 
+    def _create_ports(self):
+        def generate_random_ports(existing_ports):
+            new_ports = set()
+            while len(new_ports) < 2:
+                port = random.randint(10001, 65535)
+                if port not in existing_ports:
+                    new_ports.add(port)
+            return list(new_ports)
+
+        v1 = client.CoreV1Api()
+        configmap_name = "cerebro-ports"
+        already_exists = False
+
+        username = self.username
+
+        try:
+            api_response = v1.read_namespaced_config_map(name=configmap_name, namespace=self.namespace)
+            data = api_response.data.get("cerebro-ports", "{}")
+            configmap = json.loads(data) if data else {}
+            already_exists = True
+        except Exception:
+            configmap = None
+            print("ConfigMap {} not found".format(configmap_name))
+
+        if configmap:
+            existing_ports = {port for user_ports in configmap.values() for port in user_ports.values()}
+        else:
+            existing_ports = {}
+        newports = generate_random_ports(existing_ports)
+
+        # add username to configmap
+        configmap[username] = {
+            "jupyterNodePort": newports[0],
+            "tensorboardNodePort": newports[1],
+        }
+
+        # republish configmap
+        data = {username: ports for username, ports in configmap.items()}
+        body = {
+            "apiVersion": "v1",
+            "kind": "ConfigMap",
+            "metadata": {"name": configmap_name},
+            "data": {"cerebro-ports": json.dumps(data)},
+        }
+
+        if already_exists:
+            api_response = v1.patch_namespaced_config_map(name=configmap_name, namespace=self.namespace, body=body,
+                                                          pretty=True)
+        else:
+            api_response = v1.create_namespaced_config_map(namespace=self.namespace, body=body, pretty=True)
+
+        return configmap[username]
+
+    def _get_ports(self):
+        v1 = client.CoreV1Api()
+        configmap_name = "cerebro-ports"
+
+        try:
+            api_response = v1.read_namespaced_config_map(name=configmap_name, namespace=self.namespace)
+            data = api_response.data.get("cerebro-ports", "{}")
+            configmap = json.loads(data) if data else {}
+        except Exception:
+            configmap = None
+            print("ConfigMap {} not found".format(configmap_name))
+
+        return configmap[self.username]
+
+    def _delete_ports(self):
+        v1 = client.CoreV1Api()
+        configmap_name = "cerebro-ports"
+        configmap = {}
+        username = self.username
+
+        try:
+            api_response = v1.read_namespaced_config_map(name=configmap_name, namespace=self.namespace)
+            data = api_response.data.get("cerebro-ports", "{}")
+            print(data)
+            configmap = json.loads(data) if data else {}
+        except Exception as e:
+            print(f"Error getting ConfigMap: {e}")
+            return
+
+        if username in configmap:
+            del configmap[username]
+            print(configmap)
+            data = {username: ports for username, ports in configmap.items()}
+            body = {
+                "apiVersion": "v1",
+                "kind": "ConfigMap",
+                "metadata": {"name": configmap_name},
+                "data": {"cerebro-ports": json.dumps(data)},
+            }
+            api_response = v1.patch_namespaced_config_map(name=configmap_name, namespace=self.namespace, body=body,
+                                                          pretty=True)
+
+            return True
+        else:
+            return False
+
     def init_cerebro(self):
         config.load_kube_config()
         v1 = client.CoreV1Api()
-
-        # add hardware info configmap
-        node_hardware_info = {}
-        for i in range(self.num_workers):
-            node_hardware_info["node" + str(i)] = {
-                "num_cores": self.values_yaml["cluster"]["resourceRequests"]["workerCPU"],
-                "num_gpus": self.values_yaml["cluster"]["resourceRequests"]["workerGPU"]
-            }
 
         # create node hardware info configmap
         cm_exists = False
@@ -116,31 +211,36 @@ class CerebroInstaller:
             cm_exists = True
         except Exception:
             pass
+
         if not cm_exists:
-            configmap = client.V1ConfigMap(data={"data": json.dumps(node_hardware_info)}, metadata=client.V1ObjectMeta(name="cerebro-node-hardware-info"))
+            node_hardware_info = {}
+            for i in range(self.num_workers):
+                node_hardware_info["node" + str(i)] = {
+                    "num_cores": self.values_yaml["cluster"]["resourceRequests"]["workerCPU"],
+                    "num_gpus": self.values_yaml["cluster"]["resourceRequests"]["workerGPU"]
+                }
+            configmap = client.V1ConfigMap(data={"data": json.dumps(node_hardware_info)},
+                                           metadata=client.V1ObjectMeta(name="cerebro-node-hardware-info"))
             v1.create_namespaced_config_map(namespace=self.namespace, body=configmap)
             print("Created configmap for node hardware info")
+
+        # create ports
+        ports = self._create_ports()
 
         # make configmap of select values.yaml values
         configmap_values = {
             "username": self.username,
             "namespace": self.values_yaml["cluster"]["namespace"],
             "controller_data_path": self.values_yaml["controller"]["volumes"]["dataPath"],
-            "worker_rpc_port": self.values_yaml["worker"]["rpcPort"],
             "user_code_path": self.values_yaml["controller"]["volumes"]["userCodePath"],
-            "server_backend_port": self.values_yaml["server"]["backendPort"],
-            "jupyter_token_string": self.values_yaml["cluster"]["jupyterTokenSting"],
-            "jupyter_node_port": self.values_yaml["controller"]["services"]["jupyterNodePort"],
-            "tensorboard_node_port": self.values_yaml["controller"]["services"]["tensorboardNodePort"],
-            "grafana_node_port": self.values_yaml["controller"]["services"]["grafanaNodePort"],
-            "prometheus_node_port": self.values_yaml["controller"]["services"]["prometheusNodePort"],
-            "loki_port": self.values_yaml["controller"]["services"]["lokiPort"],
+            "tensorboard_node_port": ports["tensorboardNodePort"],
             "shard_multiplicity": self.values_yaml["worker"]["shardMultiplicity"],
             "sample_size": self.values_yaml["worker"]["sampleSize"],
         }
 
         # create cerebro info configmap
-        configmap = client.V1ConfigMap(data={"data": json.dumps(configmap_values)}, metadata=client.V1ObjectMeta(name="{}-cerebro-info".format(self.username)))
+        configmap = client.V1ConfigMap(data={"data": json.dumps(configmap_values)},
+                                       metadata=client.V1ObjectMeta(name="{}-cerebro-info".format(self.username)))
         v1.create_namespaced_config_map(namespace=self.namespace, body=configmap)
         print("Created configmap for Cerebro values info")
 
@@ -165,7 +265,8 @@ class CerebroInstaller:
             "rm -rf charts/cerebro-controller/templates/*",
             "cp ./controller/* charts/cerebro-controller/templates/",
             "cp values.yaml charts/cerebro-controller/values.yaml",
-            "helm install --namespace={} {}-cerebro-controller charts/cerebro-controller/".format(self.namespace, self.username),
+            "helm install --namespace={} {}-cerebro-controller charts/cerebro-controller/".format(self.namespace,
+                                                                                                  self.username),
             "rm -rf charts"
         ]
 
@@ -222,36 +323,6 @@ class CerebroInstaller:
 
         print("MOP Workers created successfully")
 
-    def create_server(self):
-        cmds = [
-            "mkdir -p charts",
-            "helm create charts/cerebro-server",
-            "rm -rf charts/cerebro-server/templates/*",
-            "cp ./server/* charts/cerebro-server/templates/",
-            "cp values.yaml charts/cerebro-server/values.yaml",
-            "helm install --namespace={} {}webapp charts/cerebro-server/".format(self.namespace, self.username),
-            "rm -rf charts"
-        ]
-
-        for cmd in cmds:
-            time.sleep(0.5)
-            run(cmd, capture_output=False)
-
-        print("Created Server Deployment")
-
-        config.load_kube_config()
-        v1 = client.AppsV1Api()
-        ready = False
-        deployment_name = "{}-cerebro-server".format(self.username)
-
-        while not ready:
-            rollout = v1.read_namespaced_deployment_status(name=deployment_name, namespace=self.namespace)
-            if rollout.status.ready_replicas == rollout.status.replicas:
-                print("Server created successfully")
-                ready = True
-            else:
-                time.sleep(1)
-
     def shutdown_cerebro(self):
         # load kubernetes config
         config.load_kube_config()
@@ -284,16 +355,6 @@ class CerebroInstaller:
             print("Got error while cleaning up Controller: " + str(e))
         print("Cleaned up Controller")
 
-        # clean up server
-        try:
-            cmd5 = "helm delete {}-server -n {}".format(self.username, self.namespace)
-            run(cmd5, halt_exception=False)
-            label_selector = "app=cerebro-server,user={}".format(self.username)
-            wait_till_delete(self.namespace, label_selector, v1)
-            print("Cleaned up Server")
-        except Exception as e:
-            print("Got error while cleaning up Server: " + str(e))
-
         # cleanUp ConfigMaps
         configmap_name = "{}-cerebro-info".format(self.username)
         try:
@@ -314,6 +375,18 @@ class CerebroInstaller:
     def testing(self):
         pass
 
+    def print_url(self):
+        # generate ssh command
+
+        j = self.values_yaml["cluster"]["jupyterTokenSting"]
+        j_bin = j.encode("utf-8")
+        j_token = j_bin.hex().upper()
+        j_port = self._get_ports()["jupyterNodePort"]
+        jupyter_url = "http://localhost:" + str(j_port) + "/?token=" + j_token
+
+        print("You can access the cluster using this URL:")
+        print(jupyter_url)
+
     def install_cerebro(self):
         # initialize basic cerebro components
         self.init_cerebro()
@@ -321,17 +394,11 @@ class CerebroInstaller:
         # creates Controller
         self.create_controller()
 
-        # create webapp
-        self.create_server()
-
         # create Workers
         self.create_workers()
 
-        # url = self.values_yaml["cluster"]["networking"]["publicDNSName"]
-        # port = self.values_yaml["webApp"]["uiNodePort"]
-        # time.sleep(5)
-        # print("You can access the cluster using this URL:")
-        # print("http://{}:{}".format(url, port))
+        time.sleep(5)
+        self.print_url()
 
 
 if __name__ == '__main__':

@@ -12,13 +12,8 @@ controller:
     gitURL: https://github.com/prsridha/cerebro-core.git
     core: prsridha/cerebro-core:latest
   services:
-    lokiPort: 3100
     jupyterPort: 8888
     tensorboardPort: 6006
-    grafanaNodePort: 30030
-    jupyterNodePort: 30888
-    prometheusNodePort: 30090
-    tensorboardNodePort: 30999
 cluster:
   namespace: default
   jupyterTokenSting: projectcerebro
