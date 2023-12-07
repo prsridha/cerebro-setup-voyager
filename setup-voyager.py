@@ -236,6 +236,7 @@ class CerebroInstaller:
         # create directories
         dirs = []
         base_path = self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", self.username)
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["kvsPath"].lstrip('/')))
         dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["dataPath"].lstrip('/')))
         dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["metricsPath"].lstrip('/')))
         dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["checkpointPath"].lstrip('/')))
@@ -246,6 +247,7 @@ class CerebroInstaller:
 
         for i in dirs:
             Path(i).mkdir(parents=True, exist_ok=True)
+            os.system("chown -R 777 {}".format(i))
 
     def create_controller(self):
         cmds = [
