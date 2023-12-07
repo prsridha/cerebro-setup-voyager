@@ -409,9 +409,6 @@ class CerebroInstaller:
         except Exception as e:
             print(f"Error deleting ConfigMap '{configmap_name}': {e}")
 
-        # clear out hostPath Volumes
-        self._delete_hostpath_volumes()
-
         # delete port-forwards
         command = "ps -Af | grep {} | grep port-forward".format(self.username)
         output = subprocess.check_output(command, shell=True).decode("utf-8")
@@ -421,6 +418,9 @@ class CerebroInstaller:
             pid = int(parts[1])
             os.kill(pid, signal.SIGTERM)
         print("Removed all Kubernetes port-forwards")
+
+        # clear out hostPath Volumes
+        self._delete_hostpath_volumes()
 
         print("Shutdown Cerebro!")
 

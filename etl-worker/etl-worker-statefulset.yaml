@@ -94,7 +94,7 @@ spec:
           type: DirectoryOrCreate
       - name: kube-config-volume
         hostPath:
-          path: "/home/{{ .Values.cluster.username }}/.kube/config"
+          path: "/home/xmen/.kube/config"
           type: File
 ---
 ---
