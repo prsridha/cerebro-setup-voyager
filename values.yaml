@@ -31,16 +31,7 @@ cluster:
     workerGPU: 4
   numWorkers: 2
   username: <username>
-  userUID: <uid>
-  userGID: <gid>
 worker:
-  rpcPort: 7777
   sampleSize: 0.01
   shardMultiplicity: 4
   workerDataPath: /data_storage_worker
-server:
-  uiPort: 80
-  backendPort: 8083
-  uiNodePort: 30080
-  backendNodePort: 30083
-  dataPath: /data

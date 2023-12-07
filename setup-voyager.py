@@ -73,25 +73,14 @@ class CerebroInstaller:
         with open('values.yaml', 'r') as yaml_file:
             self.values_yaml = yaml.safe_load(yaml_file)
 
-        updated = False
-        username = run("whoami")
-
         # get username and update in values YAML file
+        username = run("whoami")
         if "<username>" in self.values_yaml["cluster"]["username"]:
-            updated = True
             self.values_yaml["cluster"]["username"] = self.values_yaml["cluster"]["username"].replace(
                 "<username>", username)
             self.values_yaml["controller"]["volumes"]["baseHostPath"] = (
                 self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", username))
-        if not (isinstance(self.values_yaml["cluster"]["userUID"], int) and isinstance(self.values_yaml["cluster"]["userGID"], int)):
-            updated = True
-            user_info = pwd.getpwnam(username)
-            uid = user_info.pw_uid
-            gid = user_info.pw_gid
-            self.values_yaml["cluster"]["userUID"] = uid
-            self.values_yaml["cluster"]["userGID"] = gid
 
-        if updated:
             with open("values.yaml", "w") as f:
                 yaml.safe_dump(self.values_yaml, f)
 

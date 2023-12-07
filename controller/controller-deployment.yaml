@@ -21,9 +21,8 @@ spec:
     spec:
       hostname: controller
       securityContext:
-        runAsUser: {{ .Values.cluster.userUID }}
-        runAsGroup: {{ .Values.cluster.userGID }}
-        fsGroup: {{ .Values.cluster.userGID }}
+        runAsUser: 1000
+        runAsGroup: 1000
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
