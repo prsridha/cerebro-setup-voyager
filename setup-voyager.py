@@ -416,7 +416,10 @@ class CerebroInstaller:
         for line in lines:
             parts = line.split()
             pid = int(parts[1])
-            os.kill(pid, signal.SIGTERM)
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except:
+                pass
         print("Removed all Kubernetes port-forwards")
 
         # clear out hostPath Volumes
