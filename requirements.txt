@@ -2,3 +2,4 @@ fire
 oyaml
 kubernetes
 fabric2
+python-daemon

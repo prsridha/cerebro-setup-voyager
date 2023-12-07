@@ -1,10 +1,10 @@
 import os
-import pwd
 import json
 import time
 import fire
 import shutil
 import random
+import daemon
 import subprocess
 import oyaml as yaml
 from pathlib import Path
@@ -290,16 +290,14 @@ class CerebroInstaller:
         j_local_port = self.values_yaml["controller"]["services"]["jupyterPort"]
         t_local_port = self.values_yaml["controller"]["services"]["tensorboardPort"]
 
-        pf1 = ["kubectl", "port-forward", "-n", self.namespace, "svc/{}-jupyternotebooksvc".format(self.username),
-               "{}:{}".format(j_remote_port, j_local_port)]
-        pf2 = ["kubectl", "port-forward", "-n", self.namespace, "svc/{}-tensorboardsvc".format(self.username),
-               "{}:{}".format(t_remote_port, t_local_port)]
+        pf1 = "kubectl port-forward -n {} svc/{}-jupyternotebooksvc {}:{}".format(self.namespace, self.username,
+                                                                                  j_remote_port, j_local_port)
+        pf2 = "kubectl port-forward -n {} svc/{}-tensorboardsvc {}:{}".format(self.namespace, self.username,
+                                                                              t_remote_port, t_local_port)
 
-        try:
-            subprocess.Popen(pf1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            subprocess.Popen(pf2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        except Exception as e:
-            print("Failed to create port-forward commands - {}".format(e))
+        with daemon.DaemonContext():
+            run(pf1)
+            run(pf2)
 
     def create_workers(self):
         # create ETL Workers
