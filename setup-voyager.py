@@ -195,6 +195,39 @@ class CerebroInstaller:
         else:
             return False
 
+    def _delete_hostpath_volumes(self):
+        username = self.values_yaml["cluster"]["username"]
+        pod_name = "{}-cleanup-volume".format(username)
+        # read values YAML file
+        with open('misc/hostpath_del.yaml', 'r') as yaml_file:
+            yaml_data = yaml.safe_load(yaml_file)
+
+        yaml_data["metadata"]["name"] = pod_name
+        yaml_data["metadata"]["labels"]["user"] = username
+        yaml_data['spec']['volumes'][0]['hostPath']['path'] = self.values_yaml["controller"]["volumes"]["baseHostPath"]
+
+        with open("misc/hostpath_del.yaml", "w") as f:
+            yaml.safe_dump(yaml_data, f)
+
+        # Create the pod
+        config.load_kube_config()
+        v1 = client.CoreV1Api()
+        v1.create_namespaced_pod(body=yaml_data, namespace=self.namespace)
+
+        while True:
+            pod = v1.read_namespaced_pod_status(name=pod_name, namespace=self.namespace)
+            pod_phase = pod.status.phase
+
+            if pod_phase == "Succeeded":
+                print(f"Pod {pod_name} has completed its task. Deleting the pod.")
+                v1.delete_namespaced_pod(name=pod_name, namespace=self.namespace)
+                break
+            elif pod_phase == "Failed":
+                print(f"Pod {pod_name} failed. Deleting the pod.")
+                v1.delete_namespaced_pod(name=pod_name, namespace=self.namespace)
+                break
+            time.sleep(2)
+
     def init_cerebro(self):
         v1 = client.CoreV1Api()
 
@@ -380,8 +413,7 @@ class CerebroInstaller:
             print(f"Error deleting ConfigMap '{configmap_name}': {e}")
 
         # clear out hostPath Volumes
-        base_path = self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", self.username)
-        shutil.rmtree(base_path)
+        self._delete_hostpath_volumes()
 
         # delete port-forwards
         command = "ps -Af | grep {} | grep port-forward".format(self.username)

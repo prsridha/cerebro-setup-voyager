@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <pod_name>
+  labels:
+    user: <username>
+spec:
+  containers:
+    - name: cleanup
+      image: busybox
+      command:
+        - /bin/bash
+        - "-c"
+        - "rm -rf /mnt/*"
+      volumeMounts:
+        - name: cerebro-volume
+          mountPath: /mnt
+  volumes:
+    - name: cerebro-volume
+      hostPath:
+        path: <host_path>
