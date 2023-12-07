@@ -247,7 +247,7 @@ class CerebroInstaller:
 
         for i in dirs:
             Path(i).mkdir(parents=True, exist_ok=True)
-            subprocess.run(["chmod", "-R", "777", i])
+            run("chmod -R 777 {}".format(i))
 
     def create_controller(self):
         cmds = [
@@ -278,6 +278,19 @@ class CerebroInstaller:
                 ready = True
             else:
                 time.sleep(1)
+
+        # run port-forwarding
+        ports = self._get_ports()
+        j_remote_port = ports["jupyterNodePort"]
+        t_remote_port = ports["tensorboardNodePort"]
+        j_local_port = self.values_yaml["controller"]["services"]["jupyterPort"]
+        t_local_port = self.values_yaml["controller"]["services"]["tensorboardPort"]
+
+        pf1 = "kubectl port-forward svc/{}-jupyternotebooksvc {}:{} &".format(self.username, j_remote_port, j_local_port)
+        pf2 = "kubectl port-forward svc/{}-tensorboardsvc {}:{} &".format(self.username, t_remote_port, t_local_port)
+
+        run(pf1)
+        run(pf2)
 
     def create_workers(self):
         # create ETL Workers
@@ -368,16 +381,23 @@ class CerebroInstaller:
 
     def print_url(self):
         # generate ssh command
-
+        ports = self._get_ports()
+        j_remote_port = ports["jupyterNodePort"]
+        t_remote_port = ports["tensorboardNodePort"]
+        j_local_port = self.values_yaml["controller"]["services"]["jupyterPort"]
+        t_local_port = self.values_yaml["controller"]["services"]["tensorboardPort"]
+        ssh_cmd = "ssh -N -L {}:localhost:{} -L {}:localhost:{} {}@login.voyager.sdsc.edu".format(j_local_port, j_remote_port, t_local_port, t_remote_port, self.username)
+        print("Run this command on your local machine's terminal - ")
+        print(ssh_cmd, "\n")
 
         j = self.values_yaml["cluster"]["jupyterTokenSting"]
         j_bin = j.encode("utf-8")
         j_token = j_bin.hex().upper()
-        j_port = self._get_ports()["jupyterNodePort"]
-        jupyter_url = "http://localhost:" + str(j_port) + "/?token=" + j_token
+        jupyter_url = "http://localhost:" + str(j_local_port) + "/?token=" + j_token
+        tensorboard_url = "http://localhost:{}".format(t_local_port)
 
-        print("You can access the cluster using this URL:")
-        print(jupyter_url)
+        print("You can access the JupyterNotebook here -", jupyter_url)
+        print("You can access Tensorboard here -", tensorboard_url)
 
     def install_cerebro(self):
         # initialize basic cerebro components
