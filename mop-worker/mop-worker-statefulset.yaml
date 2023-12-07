@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.cluster.namespace }}
 spec:
   podManagementPolicy: Parallel
-  serviceName: {{ .Values.cluster.username }}-mopworkersvc
+  serviceName: {{ .Values.cluster.username }}-headless-mopsvc
   replicas: 0
   selector:
     matchLabels:
@@ -20,9 +20,8 @@ spec:
     spec:
       hostname: $WORKER_ID_SELF
       securityContext:
-        runAsUser: {{ .Values.cluster.userUID }}
-        runAsGroup: {{ .Values.cluster.userGID }}
-        fsGroup: {{ .Values.cluster.userGID }}
+        runAsUser: 1000
+        runAsGroup: 1000
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -49,13 +48,9 @@ spec:
             habana.ai/gaudi: {{ .Values.cluster.resourceRequests.workerGPU }}
             memory: {{ .Values.cluster.resourceRequests.workerMemory }}
             cpu: {{ .Values.cluster.resourceRequests.workerCPU }}
-        ports:
-          - containerPort: {{ .Values.worker.rpcPort }}
         env:
         - name: PLATFORM
           value: {{ .Values.controller.image.platform }}
-        - name: CLOUD_PROVIDER
-          value: {{ .Values.cluster.cloudProvider }}
         - name: GIT_SYNC_REPO
           value: {{ .Values.controller.image.gitURL }}
         - name: GIT_SYNC_BRANCH
@@ -120,3 +115,19 @@ spec:
         hostPath:
           path: "/home/{{ .Values.cluster.username }}/.kube/config"
           type: File
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.cluster.username }}-headless-mopsvc
+  labels:
+    app: cerebro-headless-mopsvc
+    user: {{ .Values.cluster.username }}
+spec:
+  clusterIP: None
+  selector:
+    app: cerebro-mop-worker
+    user: {{ .Values.cluster.username }}
+  ports:
+    - protocol: TCP
+      port: 80

@@ -20,9 +20,8 @@ spec:
     spec:
       hostname: $WORKER_ID_SELF
       securityContext:
-        runAsUser: {{ .Values.cluster.userUID }}
-        runAsGroup: {{ .Values.cluster.userGID }}
-        fsGroup: {{ .Values.cluster.userGID }}
+        runAsUser: 1000
+        runAsGroup: 1000
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -50,8 +49,6 @@ spec:
         env:
         - name: PLATFORM
           value: {{ .Values.controller.image.platform }}
-        - name: CLOUD_PROVIDER
-          value: {{ .Values.cluster.cloudProvider }}
         - name: GIT_SYNC_REPO
           value: {{ .Values.controller.image.gitURL }}
         - name: GIT_SYNC_BRANCH
@@ -99,3 +96,20 @@ spec:
         hostPath:
           path: "/home/{{ .Values.cluster.username }}/.kube/config"
           type: File
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.cluster.username }}-headless-etlsvc
+  labels:
+    app: cerebro-headless-etlsvc
+    user: {{ .Values.cluster.username }}
+spec:
+  clusterIP: None
+  selector:
+    app: cerebro-etl-worker
+    user: {{ .Values.cluster.username }}
+  ports:
+    - protocol: TCP
+      port: 80
