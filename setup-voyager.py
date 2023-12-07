@@ -4,6 +4,7 @@ import time
 import fire
 import shutil
 import random
+import signal
 import daemon
 import subprocess
 import oyaml as yaml
@@ -382,8 +383,17 @@ class CerebroInstaller:
         base_path = self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", self.username)
         shutil.rmtree(base_path)
 
-    def testing(self):
-        pass
+        # delete port-forwards
+        command = "ps -Af | grep {} | grep port-forward".format(self.username)
+        output = subprocess.check_output(command, shell=True).decode("utf-8")
+        lines = output.strip().split('\n')
+        for line in lines:
+            parts = line.split()
+            pid = int(parts[1])
+            os.kill(pid, signal.SIGTERM)
+        print("Removed all Kubernetes port-forwards")
+
+        print("Shutdown Cerebro!")
 
     def print_url(self):
         # generate ssh command
@@ -404,6 +414,9 @@ class CerebroInstaller:
 
         print("You can access the JupyterNotebook here -", jupyter_url)
         print("You can access Tensorboard here -", tensorboard_url)
+
+    def testing(self):
+        pass
 
     def install_cerebro(self):
         # initialize basic cerebro components
