@@ -69,6 +69,9 @@ class CerebroInstaller:
         self.num_workers = None
         self.values_yaml = None
 
+        # load kubernetes config
+        config.load_kube_config()
+
         # read values YAML file
         with open('values.yaml', 'r') as yaml_file:
             self.values_yaml = yaml.safe_load(yaml_file)
@@ -145,16 +148,19 @@ class CerebroInstaller:
     def _get_ports(self):
         v1 = client.CoreV1Api()
         configmap_name = "cerebro-ports"
+        configmap = None
 
         try:
             api_response = v1.read_namespaced_config_map(name=configmap_name, namespace=self.namespace)
             data = api_response.data.get("cerebro-ports", "{}")
-            configmap = json.loads(data) if data else {}
+            configmap = json.loads(data)
         except Exception:
-            configmap = None
             print("ConfigMap {} not found".format(configmap_name))
 
-        return configmap[self.username]
+        if configmap:
+            return configmap[self.username]
+        else:
+            raise Exception("No port data found")
 
     def _delete_ports(self):
         v1 = client.CoreV1Api()
@@ -189,7 +195,6 @@ class CerebroInstaller:
             return False
 
     def init_cerebro(self):
-        config.load_kube_config()
         v1 = client.CoreV1Api()
 
         # create node hardware info configmap
@@ -266,7 +271,6 @@ class CerebroInstaller:
             run(cmd, capture_output=False)
         print("Created Controller deployment")
 
-        config.load_kube_config()
         v1 = client.AppsV1Api()
         ready = False
         deployment_name = "{}-cerebro-controller".format(self.username)
@@ -286,11 +290,16 @@ class CerebroInstaller:
         j_local_port = self.values_yaml["controller"]["services"]["jupyterPort"]
         t_local_port = self.values_yaml["controller"]["services"]["tensorboardPort"]
 
-        pf1 = "kubectl port-forward svc/{}-jupyternotebooksvc {}:{} &".format(self.username, j_remote_port, j_local_port)
-        pf2 = "kubectl port-forward svc/{}-tensorboardsvc {}:{} &".format(self.username, t_remote_port, t_local_port)
+        pf1 = ["kubectl", "port-forward", "-n", self.namespace, "svc/{}-jupyternotebooksvc".format(self.username),
+               "{}:{}".format(j_remote_port, j_local_port)]
+        pf2 = ["kubectl", "port-forward", "-n", self.namespace, "svc/{}-tensorboardsvc".format(self.username),
+               "{}:{}".format(t_remote_port, t_local_port)]
 
-        run(pf1)
-        run(pf2)
+        try:
+            subprocess.Popen(pf1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen(pf2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except Exception as e:
+            print("Failed to create port-forward commands - {}".format(e))
 
     def create_workers(self):
         # create ETL Workers
@@ -329,7 +338,6 @@ class CerebroInstaller:
 
     def shutdown_cerebro(self):
         # load kubernetes config
-        config.load_kube_config()
         v1 = client.CoreV1Api()
 
         # clean up Workers
