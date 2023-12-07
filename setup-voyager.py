@@ -247,7 +247,7 @@ class CerebroInstaller:
 
         for i in dirs:
             Path(i).mkdir(parents=True, exist_ok=True)
-            os.system("chown -R 777 {}".format(i))
+            subprocess.run(["chmod", "-R", "777", i])
 
     def create_controller(self):
         cmds = [
@@ -368,6 +368,7 @@ class CerebroInstaller:
 
     def print_url(self):
         # generate ssh command
+
 
         j = self.values_yaml["cluster"]["jupyterTokenSting"]
         j_bin = j.encode("utf-8")
