@@ -206,9 +206,6 @@ class CerebroInstaller:
         yaml_data["metadata"]["labels"]["user"] = username
         yaml_data['spec']['volumes'][0]['hostPath']['path'] = self.values_yaml["controller"]["volumes"]["baseHostPath"]
 
-        with open("misc/hostpath_del.yaml", "w") as f:
-            yaml.safe_dump(yaml_data, f)
-
         # Create the pod
         config.load_kube_config()
         v1 = client.CoreV1Api()
