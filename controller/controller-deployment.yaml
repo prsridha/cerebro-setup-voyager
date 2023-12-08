@@ -112,5 +112,5 @@ spec:
           type: DirectoryOrCreate
       - name: kube-config-volume
         hostPath:
-          path: "/home/xmen/.kube/config"
+          path: "/home/{{ .Values.cluster.username }}/.kube/config"
           type: File
