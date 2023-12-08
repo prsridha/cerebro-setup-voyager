@@ -74,7 +74,7 @@ spec:
         - name: kvs-storage
           mountPath: {{ .Values.controller.volumes.kvsPath }}
         - name: kube-config-volume
-          mountPath: /root/.kube/config
+          mountPath: /home/xmen/.kube/config
       volumes:
       - name: user-code
         hostPath:
@@ -94,7 +94,7 @@ spec:
           type: DirectoryOrCreate
       - name: kube-config-volume
         hostPath:
-          path: "/home/xmen/.kube/config"
+          path: "/home/{{ .Values.cluster.username }}/.kube/config"
           type: File
 ---
 ---

@@ -83,7 +83,7 @@ spec:
         - name: kvs-storage
           mountPath: {{ .Values.controller.volumes.kvsPath }}
         - name: kube-config-volume
-          mountPath: /root/.kube/config
+          mountPath: /home/xmen/.kube/config
         ports:
         - containerPort: {{ .Values.controller.services.jupyterPort }}
           name: jupyter-port
