@@ -7,11 +7,9 @@ metadata:
 spec:
   containers:
     - name: cleanup
-      image: busybox
-      command:
-        - /bin/sh
-        - "-c"
-        - "rm -rf /mnt/*"
+      image: ubuntu
+      command: [ "/bin/bash", "-c", "--" ]
+      args: [ "rm -rf /mnt/*" ]
       volumeMounts:
         - name: cerebro-volume
           mountPath: /mnt
