@@ -19,9 +19,9 @@ spec:
         user: {{ .Values.cluster.username }}
     spec:
       hostname: $WORKER_ID_SELF
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
+#      securityContext:
+#        runAsUser: 1000
+#        runAsGroup: 1000
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -82,7 +82,7 @@ spec:
         - name: kvs-storage
           mountPath: {{ .Values.controller.volumes.kvsPath }}
         - name: kube-config-volume
-          mountPath: /home/xmen/.kube/config
+          mountPath: /root/.kube/config
       volumes:
       - name: dshm
         emptyDir:
