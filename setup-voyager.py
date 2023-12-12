@@ -2,10 +2,8 @@ import os
 import json
 import time
 import fire
-import shutil
 import random
 import signal
-import daemon
 import subprocess
 import oyaml as yaml
 from pathlib import Path
@@ -321,14 +319,17 @@ class CerebroInstaller:
         j_local_port = self.values_yaml["controller"]["services"]["jupyterPort"]
         t_local_port = self.values_yaml["controller"]["services"]["tensorboardPort"]
 
-        pf1 = "kubectl port-forward -n {} svc/{}-jupyternotebooksvc {}:{}".format(self.namespace, self.username,
-                                                                                  j_remote_port, j_local_port)
-        pf2 = "kubectl port-forward -n {} svc/{}-tensorboardsvc {}:{}".format(self.namespace, self.username,
-                                                                              t_remote_port, t_local_port)
+        pf1 = "nohup kubectl port-forward -n {} svc/{}-jupyternotebooksvc {}:{} >/dev/null 2>&1 &".format(
+            self.namespace, self.username,
+            j_remote_port, j_local_port)
+        pf2 = "nohup kubectl port-forward -n {} svc/{}-tensorboardsvc {}:{} >/dev/null 2>&1 &".format(
+            self.namespace, self.username,
+            t_remote_port, t_local_port)
 
-        with daemon.DaemonContext():
-            run(pf1)
-            run(pf2)
+        run(pf1, capture_output=False)
+        print("Created Kubernetes port-forward for JupyterLab")
+        run(pf2, capture_output=False)
+        print("Created Kubernetes port-forward for Tensorboard")
 
     def create_workers(self):
         # create ETL Workers
