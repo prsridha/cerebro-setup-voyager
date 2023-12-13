@@ -92,31 +92,31 @@ spec:
       - name: user-code
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userCodePath }}
-          type: DirectoryOrCreate
+          type: Directory
       - name: data-storage-worker
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.worker.workerDataPath }}
-          type: DirectoryOrCreate
+          type: Directory
       - name: data-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
-          type: DirectoryOrCreate
+          type: Directory
       - name: metrics-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.metricsPath }}
-          type: DirectoryOrCreate
+          type: Directory
       - name: checkpoint-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.checkpointPath }}
-          type: DirectoryOrCreate
+          type: Directory
       - name: dataset
         hostPath:
           path: {{ .Values.controller.volumes.datasetHostPath }}
-          type: DirectoryOrCreate
+          type: Directory
       - name: kvs-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.kvsPath }}
-          type: DirectoryOrCreate
+          type: Directory
       - name: kube-config-volume
         hostPath:
           path: "/home/{{ .Values.cluster.username }}/.kube/config"
