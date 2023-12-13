@@ -5,7 +5,7 @@ import fire
 import random
 import signal
 import subprocess
-import oyaml as yaml
+import yaml
 from pathlib import Path
 from kubernetes import client, config
 
@@ -77,14 +77,20 @@ class CerebroInstaller:
 
         # get username and update in values YAML file
         username = run("whoami")
-        if "<username>" in self.values_yaml["cluster"]["username"]:
-            self.values_yaml["cluster"]["username"] = self.values_yaml["cluster"]["username"].replace(
-                "<username>", username)
-            self.values_yaml["controller"]["volumes"]["baseHostPath"] = (
-                self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", username))
+        if "<username>" in str(self.values_yaml):
+            def replace_username(data):
+                if isinstance(data, dict):
+                    for key, value in data.items():
+                        if isinstance(value, str):
+                            data[key] = value.replace("<username>", username)
+                        else:
+                            replace_username(value)
+                elif isinstance(data, list):
+                    for i in range(len(data)):
+                        replace_username(data[i])
 
             with open("values.yaml", "w") as f:
-                yaml.safe_dump(self.values_yaml, f)
+                yaml.dump(self.values_yaml, f, default_flow_style=False, sort_keys=False)
 
         # set commonly used values
         self.username = username
