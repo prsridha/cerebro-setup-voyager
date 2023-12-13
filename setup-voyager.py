@@ -5,7 +5,7 @@ import fire
 import random
 import signal
 import subprocess
-import yaml
+import oyaml as yaml
 from pathlib import Path
 from kubernetes import client, config
 
@@ -89,6 +89,7 @@ class CerebroInstaller:
                     for i in range(len(data)):
                         replace_username(data[i])
 
+            replace_username(self.values_yaml)
             with open("values.yaml", "w") as f:
                 yaml.dump(self.values_yaml, f, default_flow_style=False, sort_keys=False)
 
