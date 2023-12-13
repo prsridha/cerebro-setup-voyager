@@ -6,6 +6,8 @@ controller:
     metricsPath: /data/metrics_storage
     checkpointPath: /data/checkpoint_storage
     baseHostPath: /voyager/ceph/users/<username>/volumes
+    datasetHostPath: /voyager/ceph/users/<username>/datasets
+    datasetMountPath: /datasets
   image:
     platform: dev
     gitBranch: v0.1

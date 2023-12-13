@@ -80,6 +80,8 @@ spec:
           mountPath: {{ .Values.controller.volumes.dataPath }}
         - name: metrics-storage
           mountPath: {{ .Values.controller.volumes.metricsPath }}
+        - name: dataset
+          mountPath: {{ .Values.controller.volumes.datasetMountPath }}
         - name: kvs-storage
           mountPath: {{ .Values.controller.volumes.kvsPath }}
         - name: kube-config-volume
@@ -105,6 +107,10 @@ spec:
       - name: data-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
+          type: DirectoryOrCreate
+      - name: dataset
+        hostPath:
+          path: {{ .Values.controller.volumes.datasetHostPath }}
           type: DirectoryOrCreate
       - name: kvs-storage
         hostPath:
