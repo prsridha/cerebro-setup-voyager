@@ -436,7 +436,7 @@ class CerebroInstaller:
         j_local_port = self.values_yaml["controller"]["services"]["jupyterPort"]
         t_local_port = self.values_yaml["controller"]["services"]["tensorboardPort"]
         ssh_cmd = "ssh -N -L {}:localhost:{} -L {}:localhost:{} {}@login.voyager.sdsc.edu".format(j_local_port, j_remote_port, t_local_port, t_remote_port, self.username)
-        print("Run this command on your local machine's terminal - ")
+        print("\n\nRun this command on your local machine's terminal - ")
         print(ssh_cmd, "\n")
 
         j = self.values_yaml["cluster"]["jupyterTokenSting"]
