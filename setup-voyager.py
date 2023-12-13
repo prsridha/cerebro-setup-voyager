@@ -263,7 +263,7 @@ class CerebroInstaller:
             "namespace": self.values_yaml["cluster"]["namespace"],
             "controller_data_path": self.values_yaml["controller"]["volumes"]["dataPath"],
             "user_code_path": self.values_yaml["controller"]["volumes"]["userCodePath"],
-            "tensorboard_node_port": ports["tensorboardNodePort"],
+            "tensorboard_port": self.values_yaml["controller"]["services"]["tensorboardPort"],
             "shard_multiplicity": self.values_yaml["worker"]["shardMultiplicity"],
             "sample_size": self.values_yaml["worker"]["sampleSize"],
         }
