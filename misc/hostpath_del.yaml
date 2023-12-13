@@ -5,6 +5,7 @@ metadata:
   labels:
     user: <username>
 spec:
+  restartPolicy: Never
   containers:
     - name: cleanup
       image: ubuntu
