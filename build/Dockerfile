@@ -8,6 +8,7 @@ RUN apt-get install -y git
 RUN apt-get install -y lshw
 RUN apt-get install -y zip
 RUN apt-get install -y python3-pip
+RUN python3 -m pip install --upgrade pip
 
 COPY requirements.txt .
 
