@@ -431,6 +431,7 @@ class CerebroInstaller:
         print("Removed all Kubernetes port-forwards")
 
         # clear out hostPath Volumes
+        print("Deleting files")
         self._delete_hostpath_volumes()
 
         print("Shutdown Cerebro!")
