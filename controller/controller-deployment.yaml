@@ -112,6 +112,7 @@ spec:
         hostPath:
           path: {{ .Values.controller.volumes.datasetHostPath }}
           type: Directory
+          readOnly: true
       - name: kvs-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.kvsPath }}
