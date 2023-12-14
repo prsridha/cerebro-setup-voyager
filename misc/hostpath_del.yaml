@@ -10,7 +10,7 @@ spec:
     - name: cleanup
       image: ubuntu
       command: [ "/bin/bash", "-c", "--" ]
-      args: [ "rm -rf /mnt/*" ]
+      args: [ "rm -rf /mnt/*; exit 0" ]
       volumeMounts:
         - name: cerebro-volume
           mountPath: /mnt
