@@ -450,10 +450,10 @@ class CerebroInstaller:
         j_bin = j.encode("utf-8")
         j_token = j_bin.hex().upper()
         jupyter_url = "http://localhost:" + str(j_local_port) + "/?token=" + j_token
-        tensorboard_url = "http://localhost:{}".format(t_local_port)
-
         print("You can access the JupyterNotebook here -", jupyter_url)
-        print("You can access Tensorboard here -", tensorboard_url)
+
+        # tensorboard_url = "http://localhost:{}".format(t_local_port)
+        # print("You can access Tensorboard here -", tensorboard_url)
 
     def testing(self):
         pass
