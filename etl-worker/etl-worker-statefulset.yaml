@@ -72,8 +72,8 @@ spec:
           subPathExpr: $(WORKER_ID_SELF)
           mountPath: {{ .Values.worker.workerDataPath }}
         - name: dataset
-          readOnly: true
           mountPath: {{ .Values.controller.volumes.datasetMountPath }}
+          readOnly: true
         - name: kvs-storage
           mountPath: {{ .Values.controller.volumes.kvsPath }}
         - name: kube-config-volume
