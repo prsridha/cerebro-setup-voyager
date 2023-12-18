@@ -19,6 +19,11 @@ spec:
         app: cerebro-controller
         user: {{ .Values.cluster.username }}
     spec:
+      nodeSelector:
+        kubernetes.io/hostname:
+          NotIn:
+          - vgr-10-01
+          - vgr-10-02
       hostname: controller
 #      securityContext:
 #        runAsUser: 1000
