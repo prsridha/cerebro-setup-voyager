@@ -31,12 +31,12 @@ spec:
               - key: brightcomputing.com/node-category
                 operator: In
                 values:
-                - vgr-10-01
-                - vgr-10-02
+                - goya
               - key: kubernetes.io/hostname
                 operator: NotIn
                 values:
-                  - goya
+                - vgr-10-01
+                - vgr-10-02
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
