@@ -33,7 +33,7 @@ spec:
                 values:
                 - vgr-10-01
                 - vgr-10-02
-              - key: kubernetes.io/hostname:
+              - key: kubernetes.io/hostname
                 operator: NotIn
                 values:
                   - goya
