@@ -73,7 +73,6 @@ spec:
           mountPath: {{ .Values.worker.workerDataPath }}
         - name: dataset
           mountPath: {{ .Values.controller.volumes.datasetMountPath }}
-          readOnly: true
         - name: kvs-storage
           mountPath: {{ .Values.controller.volumes.kvsPath }}
         - name: kube-config-volume
