@@ -62,7 +62,7 @@ spec:
         - name: ORDINAL_ID
           valueFrom:
               fieldRef:
-                fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
+                fieldPath: metadata.name
         - name: POD_TYPE
           value: "mop"
         volumeMounts:
@@ -71,7 +71,6 @@ spec:
         - name: user-code
           mountPath: {{ .Values.controller.volumes.userCodePath }}
         - name: data-storage-worker
-          subPathExpr: $(ORDINAL_ID)
           mountPath: {{ .Values.worker.workerDataPath }}
         - name: data-storage
           mountPath: {{ .Values.controller.volumes.dataPath }}

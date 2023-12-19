@@ -18,7 +18,7 @@ spec:
         app: cerebro-etl-worker
         user: {{ .Values.cluster.username }}
     spec:
-      hostname: $WORKER_ID_SELF
+      hostname: {{ .Values.cluster.username }}-cerebro-etl-worker
 #      securityContext:
 #        runAsUser: 1000
 #        runAsGroup: 1000
@@ -60,7 +60,7 @@ spec:
         - name: ORDINAL_ID
           valueFrom:
             fieldRef:
-              fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
+              fieldPath: metadata.name
         - name: POD_TYPE
           value: "etl"
         volumeMounts:
@@ -69,7 +69,6 @@ spec:
         - name: data-storage
           mountPath: {{ .Values.controller.volumes.dataPath }}
         - name: data-storage-worker
-          subPathExpr: $(ORDINAL_ID)
           mountPath: {{ .Values.worker.workerDataPath }}
         - name: dataset
           mountPath: {{ .Values.controller.volumes.datasetMountPath }}
