@@ -71,7 +71,7 @@ spec:
         - name: user-code
           mountPath: {{ .Values.controller.volumes.userCodePath }}
         - name: data-storage-worker
-          subPathExpr: $(WORKER_ID_SELF)
+          subPathExpr: "$(echo $WORKER_ID_SELF | grep -oE '[0-9]+$')"
           mountPath: {{ .Values.worker.workerDataPath }}
         - name: data-storage
           mountPath: {{ .Values.controller.volumes.dataPath }}
