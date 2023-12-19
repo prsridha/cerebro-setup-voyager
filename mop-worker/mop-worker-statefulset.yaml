@@ -18,7 +18,7 @@ spec:
         app: cerebro-mop-worker
         user: {{ .Values.cluster.username }}
     spec:
-      hostname: $WORKER_ID_SELF
+      hostname: {{ .Values.cluster.username }}-cerebro-mop-worker
 #      securityContext:
 #        runAsUser: 1000
 #        runAsGroup: 1000
@@ -59,10 +59,10 @@ spec:
           value: {{ .Values.cluster.username }}
         - name: NAMESPACE
           value: {{ .Values.cluster.namespace }}
-        - name: WORKER_ID_SELF
+        - name: ORDINAL_ID
           valueFrom:
               fieldRef:
-                fieldPath: metadata.name
+                fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
         - name: POD_TYPE
           value: "mop"
         volumeMounts:
@@ -71,7 +71,7 @@ spec:
         - name: user-code
           mountPath: {{ .Values.controller.volumes.userCodePath }}
         - name: data-storage-worker
-          subPathExpr: "$(echo $WORKER_ID_SELF | grep -oE '[0-9]+$')"
+          subPathExpr: $(ORDINAL_ID)
           mountPath: {{ .Values.worker.workerDataPath }}
         - name: data-storage
           mountPath: {{ .Values.controller.volumes.dataPath }}
