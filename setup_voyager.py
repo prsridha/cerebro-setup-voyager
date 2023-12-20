@@ -341,11 +341,11 @@ class CerebroInstaller:
         # create ETL Workers
         cmds = [
             "mkdir -p charts",
-            "helm create charts/cerebro-etl-worker",
-            "rm -rf charts/cerebro-etl-worker/templates/*",
-            "cp etl-worker/* charts/cerebro-etl-worker/templates/",
-            "cp values.yaml charts/cerebro-etl-worker/values.yaml",
-            "helm install --namespace={} {}-etl-worker charts/cerebro-etl-worker".format(self.namespace, self.username),
+            "helm create charts/cerebro_etl_worker",
+            "rm -rf charts/cerebro_etl_worker/templates/*",
+            "cp etl_worker/* charts/cerebro_etl_worker/templates/",
+            "cp values.yaml charts/cerebro_etl_worker/values.yaml",
+            "helm install --namespace={} {}-etl-worker charts/cerebro_etl_worker".format(self.namespace, self.username),
             "rm -rf charts"
         ]
 
@@ -358,11 +358,11 @@ class CerebroInstaller:
         # create MOP Workers
         cmds = [
             "mkdir -p charts",
-            "helm create charts/cerebro-mop-worker",
-            "rm -rf charts/cerebro-mop-worker/templates/*",
-            "cp mop-worker/* charts/cerebro-mop-worker/templates/",
-            "cp values.yaml charts/cerebro-mop-worker/values.yaml",
-            "helm install --namespace={} {}-mop-worker charts/cerebro-mop-worker".format(self.namespace, self.username),
+            "helm create charts/cerebro_mop_worker",
+            "rm -rf charts/cerebro_mop_worker/templates/*",
+            "cp mop_worker/* charts/cerebro_mop_worker/templates/",
+            "cp values.yaml charts/cerebro_mop_worker/values.yaml",
+            "helm install --namespace={} {}-mop-worker charts/cerebro_mop_worker".format(self.namespace, self.username),
             "rm -rf charts"
         ]
 

@@ -1,0 +1,119 @@
+# Worker StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.cluster.username }}-cerebro-etl-worker
+  namespace: {{ .Values.cluster.namespace }}
+spec:
+  serviceName: {{ .Values.cluster.username }}-etlworkersvc
+  podManagementPolicy: Parallel
+  replicas: 0
+  selector:
+    matchLabels:
+      app: cerebro-etl-worker
+      user: {{ .Values.cluster.username }}
+  template:
+    metadata:
+      labels:
+        app: cerebro-etl-worker
+        user: {{ .Values.cluster.username }}
+    spec:
+      hostname: {{ .Values.cluster.username }}-cerebro-etl-worker
+#      securityContext:
+#        runAsUser: 1000
+#        runAsGroup: 1000
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: brightcomputing.com/node-category
+                operator: In
+                values:
+                - gaudi
+      serviceAccountName: {{ .Values.cluster.username }}
+      containers:
+      - name: etl-container
+        image: {{ .Values.controller.image.core }}
+        imagePullPolicy: Always
+        workingDir: /cerebro-core
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "/sync.sh; /cerebro-core/cerebro/etl/run_etl.sh" ]
+        resources:
+          limits:
+            memory: {{ .Values.cluster.resourceLimits.workerMemory }}
+            cpu: {{ .Values.cluster.resourceLimits.workerCPU }}
+          requests:
+            memory: {{ .Values.cluster.resourceRequests.workerMemory }}
+            cpu: {{ .Values.cluster.resourceRequests.workerCPU }}
+        env:
+        - name: PLATFORM
+          value: {{ .Values.controller.image.platform }}
+        - name: GIT_SYNC_REPO
+          value: {{ .Values.controller.image.gitURL }}
+        - name: GIT_SYNC_BRANCH
+          value: {{ .Values.controller.image.gitBranch }}
+        - name: USERNAME
+          value: {{ .Values.cluster.username }}
+        - name: NAMESPACE
+          value: {{ .Values.cluster.namespace }}
+        - name: ORDINAL_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_TYPE
+          value: "etl"
+        volumeMounts:
+        - name: user-code
+          mountPath: {{ .Values.controller.volumes.userCodePath }}
+        - name: data-storage
+          mountPath: {{ .Values.controller.volumes.dataPath }}
+        - name: data-storage-worker
+          mountPath: {{ .Values.worker.workerDataPath }}
+        - name: dataset
+          mountPath: {{ .Values.controller.volumes.datasetMountPath }}
+        - name: kvs-storage
+          mountPath: {{ .Values.controller.volumes.kvsPath }}
+        - name: kube-config-volume
+          mountPath: /root/.kube/config
+      volumes:
+      - name: user-code
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userCodePath }}
+          type: Directory
+      - name: data-storage
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
+          type: Directory
+      - name: data-storage-worker
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.worker.workerDataPath }}
+          type: Directory
+      - name: dataset
+        hostPath:
+          path: {{ .Values.controller.volumes.datasetHostPath }}
+          type: Directory
+      - name: kvs-storage
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.kvsPath }}
+          type: Directory
+      - name: kube-config-volume
+        hostPath:
+          path: "/home/{{ .Values.cluster.username }}/.kube/config"
+          type: File
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.cluster.username }}-headless-etlsvc
+  labels:
+    app: cerebro-headless-etlsvc
+    user: {{ .Values.cluster.username }}
+spec:
+  clusterIP: None
+  selector:
+    app: cerebro-etl-worker
+    user: {{ .Values.cluster.username }}
+  ports:
+    - protocol: TCP
+      port: 80

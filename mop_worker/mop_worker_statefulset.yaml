@@ -1,0 +1,138 @@
+# Worker StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.cluster.username }}-cerebro-mop-worker
+  namespace: {{ .Values.cluster.namespace }}
+spec:
+  podManagementPolicy: Parallel
+  serviceName: {{ .Values.cluster.username }}-headless-mopsvc
+  replicas: 0
+  selector:
+    matchLabels:
+      app: cerebro-mop-worker
+      user: {{ .Values.cluster.username }}
+  template:
+    metadata:
+      labels:
+        app: cerebro-mop-worker
+        user: {{ .Values.cluster.username }}
+    spec:
+      hostname: {{ .Values.cluster.username }}-cerebro-mop-worker
+#      securityContext:
+#        runAsUser: 1000
+#        runAsGroup: 1000
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: brightcomputing.com/node-category
+                operator: In
+                values:
+                - gaudi
+      serviceAccountName: {{ .Values.cluster.username }}
+      containers:
+      - name: mop-container
+        image: {{ .Values.controller.image.core }}
+        imagePullPolicy: Always
+        workingDir: /cerebro-core
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "/sync.sh; /cerebro-core/cerebro/mop/run_mop.sh" ]
+        resources:
+          limits:
+            habana.ai/gaudi: {{ .Values.cluster.resourceLimits.workerGPU }}
+            memory: {{ .Values.cluster.resourceLimits.workerMemory }}
+            cpu: {{ .Values.cluster.resourceLimits.workerCPU }}
+          requests:
+            habana.ai/gaudi: {{ .Values.cluster.resourceRequests.workerGPU }}
+            memory: {{ .Values.cluster.resourceRequests.workerMemory }}
+            cpu: {{ .Values.cluster.resourceRequests.workerCPU }}
+        env:
+        - name: PLATFORM
+          value: {{ .Values.controller.image.platform }}
+        - name: GIT_SYNC_REPO
+          value: {{ .Values.controller.image.gitURL }}
+        - name: GIT_SYNC_BRANCH
+          value: {{ .Values.controller.image.gitBranch }}
+        - name: USERNAME
+          value: {{ .Values.cluster.username }}
+        - name: NAMESPACE
+          value: {{ .Values.cluster.namespace }}
+        - name: ORDINAL_ID
+          valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+        - name: POD_TYPE
+          value: "mop"
+        volumeMounts:
+        - name: dshm
+          mountPath: /dev/shm
+        - name: user-code
+          mountPath: {{ .Values.controller.volumes.userCodePath }}
+        - name: data-storage-worker
+          mountPath: {{ .Values.worker.workerDataPath }}
+        - name: data-storage
+          mountPath: {{ .Values.controller.volumes.dataPath }}
+        - name: metrics-storage
+          mountPath: {{ .Values.controller.volumes.metricsPath }}
+        - name: checkpoint-storage
+          mountPath: {{ .Values.controller.volumes.checkpointPath }}
+        - name: dataset
+          mountPath: {{ .Values.controller.volumes.datasetMountPath }}
+        - name: kvs-storage
+          mountPath: {{ .Values.controller.volumes.kvsPath }}
+        - name: kube-config-volume
+          mountPath: /root/.kube/config
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: user-code
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.userCodePath }}
+          type: Directory
+      - name: data-storage-worker
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.worker.workerDataPath }}
+          type: Directory
+      - name: data-storage
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
+          type: Directory
+      - name: metrics-storage
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.metricsPath }}
+          type: Directory
+      - name: checkpoint-storage
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.checkpointPath }}
+          type: Directory
+      - name: dataset
+        hostPath:
+          path: {{ .Values.controller.volumes.datasetHostPath }}
+          type: Directory
+      - name: kvs-storage
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.kvsPath }}
+          type: Directory
+      - name: kube-config-volume
+        hostPath:
+          path: "/home/{{ .Values.cluster.username }}/.kube/config"
+          type: File
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.cluster.username }}-headless-mopsvc
+  labels:
+    app: cerebro-headless-mopsvc
+    user: {{ .Values.cluster.username }}
+spec:
+  clusterIP: None
+  selector:
+    app: cerebro-mop-worker
+    user: {{ .Values.cluster.username }}
+  ports:
+    - protocol: TCP
+      port: 80
