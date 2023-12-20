@@ -230,7 +230,7 @@ class CerebroInstaller:
                 break
             time.sleep(2)
 
-    def init_cerebro(self):
+    def init(self):
         v1 = client.CoreV1Api()
 
         # create node hardware info configmap
@@ -372,7 +372,7 @@ class CerebroInstaller:
 
         print("MOP Workers created successfully")
 
-    def shutdown_cerebro(self):
+    def shutdown(self):
         # load kubernetes config
         v1 = client.CoreV1Api()
 
@@ -435,7 +435,7 @@ class CerebroInstaller:
 
         print("Shutdown Cerebro!")
 
-    def print_url(self):
+    def url(self):
         # generate ssh command
         ports = self._get_ports()
         j_remote_port = ports["jupyterNodePort"]
@@ -458,9 +458,9 @@ class CerebroInstaller:
     def testing(self):
         pass
 
-    def install_cerebro(self):
+    def start(self):
         # initialize basic cerebro components
-        self.init_cerebro()
+        self.init()
 
         # creates Controller
         self.create_controller()
@@ -469,7 +469,7 @@ class CerebroInstaller:
         self.create_workers()
 
         time.sleep(5)
-        self.print_url()
+        self.url()
 
 
 if __name__ == '__main__':
