@@ -292,11 +292,11 @@ class CerebroInstaller:
     def create_controller(self):
         cmds = [
             "mkdir -p charts",
-            "helm create charts/cerebro-controller",
-            "rm -rf charts/cerebro-controller/templates/*",
-            "cp ./controller/* charts/cerebro-controller/templates/",
-            "cp values.yaml charts/cerebro-controller/values.yaml",
-            "helm install --namespace={} {}-cerebro-controller charts/cerebro-controller/".format(self.namespace,
+            "helm create charts/cerebro_controller",
+            "rm -rf charts/cerebro_controller/templates/*",
+            "cp ./controller/* charts/cerebro_controller/templates/",
+            "cp values.yaml charts/cerebro_controller/values.yaml",
+            "helm install --namespace={} {}-cerebro-controller charts/cerebro_controller/".format(self.namespace,
                                                                                                   self.username),
             "rm -rf charts"
         ]
