@@ -22,14 +22,14 @@ cluster:
   resourceRequests:
     controllerMemory: 16G
     controllerCPU: 16
-    workerMemory: 500G
-    workerCPU: 48
+    workerMemory: 384G
+    workerCPU: 92
     workerGPU: 8
   resourceLimits:
     controllerMemory: 32G
     controllerCPU: 20
-    workerMemory: 500G
-    workerCPU: 48
+    workerMemory: 384G
+    workerCPU: 92
     workerGPU: 8
   numWorkers: 4
   username: <username>
