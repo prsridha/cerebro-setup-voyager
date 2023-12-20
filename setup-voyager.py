@@ -243,12 +243,10 @@ class CerebroInstaller:
             pass
 
         if not cm_exists:
-            node_hardware_info = {}
-            for i in range(self.num_workers):
-                node_hardware_info["node" + str(i)] = {
-                    "num_cores": self.values_yaml["cluster"]["resourceRequests"]["workerCPU"],
-                    "num_gpus": self.values_yaml["cluster"]["resourceRequests"]["workerGPU"]
-                }
+            node_hardware_info = {
+                "num_cores": self.values_yaml["cluster"]["resourceLimits"]["workerCPU"],
+                "num_gpus": self.values_yaml["cluster"]["resourceLimits"]["workerGPU"]
+            }
             configmap = client.V1ConfigMap(data={"data": json.dumps(node_hardware_info)},
                                            metadata=client.V1ObjectMeta(name="cerebro-node-hardware-info"))
             v1.create_namespaced_config_map(namespace=self.namespace, body=configmap)
