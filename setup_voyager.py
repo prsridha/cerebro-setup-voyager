@@ -455,6 +455,10 @@ class CerebroInstaller:
         # tensorboard_url = "http://localhost:{}".format(t_local_port)
         # print("You can access Tensorboard here -", tensorboard_url)
 
+    def restart(self):
+        self.shutdown()
+        self.start()
+
     def testing(self):
         pass
 
