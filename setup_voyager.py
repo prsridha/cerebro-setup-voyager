@@ -259,7 +259,7 @@ class CerebroInstaller:
             "uid": self.values_yaml["cluster"]["uid"],
             "gid": self.values_yaml["cluster"]["gid"],
             "namespace": self.values_yaml["cluster"]["namespace"],
-            "num_nodes": self.values_yaml["cluster"]["numWorkers"],
+            "num_workers": self.values_yaml["cluster"]["numWorkers"],
             "controller_data_path": self.values_yaml["controller"]["volumes"]["dataPath"],
             "user_code_path": self.values_yaml["controller"]["volumes"]["userCodePath"],
             "tensorboard_port": self.values_yaml["controller"]["services"]["tensorboardPort"],
