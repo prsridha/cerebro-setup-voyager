@@ -77,21 +77,19 @@ class CerebroInstaller:
 
         # get username and update in values YAML file
         username = run("whoami")
+        uid = run("id -u")
+        gid = run("id -g")
         if "<username>" in str(self.values_yaml):
-            def replace_username(data):
-                if isinstance(data, dict):
-                    for key, value in data.items():
-                        if isinstance(value, str):
-                            data[key] = value.replace("<username>", username)
-                        else:
-                            replace_username(value)
-                elif isinstance(data, list):
-                    for i in range(len(data)):
-                        replace_username(data[i])
+            # read yaml
+            with open("values.yaml", 'r') as file:
+                yaml_content = file.read()
 
-            replace_username(self.values_yaml)
-            with open("values.yaml", "w") as f:
-                yaml.dump(self.values_yaml, f, default_flow_style=False, sort_keys=False)
+            updated_content = yaml_content.replace("<username>", username)
+            updated_content = updated_content.replace("<uid>", uid).replace("<gid>", gid)
+
+            # write updated yaml
+            with open("values.yaml", 'w') as file:
+                file.write(updated_content)
 
         # set commonly used values
         self.username = username
@@ -258,6 +256,8 @@ class CerebroInstaller:
         # make configmap of select values.yaml values
         configmap_values = {
             "username": self.username,
+            "uid": self.values_yaml["cluster"]["uid"],
+            "gid": self.values_yaml["cluster"]["gid"],
             "namespace": self.values_yaml["cluster"]["namespace"],
             "num_nodes": self.values_yaml["cluster"]["numWorkers"],
             "controller_data_path": self.values_yaml["controller"]["volumes"]["dataPath"],

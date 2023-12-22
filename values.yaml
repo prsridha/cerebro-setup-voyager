@@ -18,6 +18,8 @@ controller:
     tensorboardPort: 6006
 cluster:
   namespace: default
+  uid: <uid>
+  gid: <gid>
   jupyterTokenSting: projectcerebro
   resourceRequests:
     controllerMemory: 16G
