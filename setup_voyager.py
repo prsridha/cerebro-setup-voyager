@@ -219,7 +219,7 @@ class CerebroInstaller:
             pod_phase = pod.status.phase
 
             if pod_phase == "Succeeded":
-                print(f"Pod {pod_name} has completed its task. Deleting the pod.")
+                print(f"Pod {pod_name} completed. Deleting the pod.")
                 v1.delete_namespaced_pod(name=pod_name, namespace=self.namespace)
                 break
             elif pod_phase == "Failed":
