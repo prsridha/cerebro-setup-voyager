@@ -277,17 +277,15 @@ class CerebroInstaller:
         dirs = []
         base_path = self.values_yaml["controller"]["volumes"]["baseHostPath"].replace("<username>", self.username)
         dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["kvsPath"].lstrip('/')))
-        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["dataPath"].lstrip('/')))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["logPath"].lstrip('/')))
         dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["metricsPath"].lstrip('/')))
-        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["checkpointPath"].lstrip('/')))
         dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["userCodePath"].lstrip('/')))
-        for i in range(self.values_yaml["cluster"]["numWorkers"]):
-            worker_name = "{}-cerebro-worker-{}".format(self.username, str(i))
-            dirs.append(os.path.join(base_path, self.values_yaml["worker"]["workerDataPath"].lstrip('/'), worker_name))
+        dirs.append(os.path.join(base_path, self.values_yaml["controller"]["volumes"]["checkpointPath"].lstrip('/')))
+        for worker_id in range(self.values_yaml["cluster"]["numWorkers"]):
+            dirs.append(os.path.join(base_path, self.values_yaml["worker"]["workerDataPath"].lstrip('/'), str(worker_id)))
 
         for i in dirs:
             Path(i).mkdir(parents=True, exist_ok=True)
-            run("chmod -R 777 {}".format(i))
 
     def create_controller(self):
         cmds = [
