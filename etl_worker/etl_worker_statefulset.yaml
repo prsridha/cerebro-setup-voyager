@@ -70,6 +70,8 @@ spec:
           mountPath: {{ .Values.controller.volumes.dataPath }}
         - name: data-storage-worker
           mountPath: {{ .Values.worker.workerDataPath }}
+        - name: logs
+          mountPath: {{ .Values.controller.volumes.logPath }}
         - name: dataset
           mountPath: {{ .Values.controller.volumes.datasetMountPath }}
         - name: kvs-storage
