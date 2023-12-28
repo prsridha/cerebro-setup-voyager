@@ -78,6 +78,8 @@ spec:
           mountPath: {{ .Values.controller.volumes.metricsPath }}
         - name: checkpoint-storage
           mountPath: {{ .Values.controller.volumes.checkpointPath }}
+        - name: logs
+          mountPath: {{ .Values.controller.volumes.logPath }}
         - name: dataset
           mountPath: {{ .Values.controller.volumes.datasetMountPath }}
         - name: kvs-storage
@@ -107,6 +109,10 @@ spec:
       - name: checkpoint-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.checkpointPath }}
+          type: Directory
+      - name: logs
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.logPath }}
           type: Directory
       - name: dataset
         hostPath:

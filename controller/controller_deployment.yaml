@@ -80,6 +80,8 @@ spec:
           mountPath: {{ .Values.controller.volumes.dataPath }}
         - name: metrics-storage
           mountPath: {{ .Values.controller.volumes.metricsPath }}
+        - name: logs
+          mountPath: {{ .Values.controller.volumes.logPath }}
         - name: dataset
           mountPath: {{ .Values.controller.volumes.datasetMountPath }}
         - name: kvs-storage
@@ -107,6 +109,10 @@ spec:
       - name: data-storage
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.dataPath }}
+          type: Directory
+      - name: logs
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.logPath }}
           type: Directory
       - name: dataset
         hostPath:

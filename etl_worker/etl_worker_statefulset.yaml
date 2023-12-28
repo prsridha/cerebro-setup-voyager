@@ -89,6 +89,10 @@ spec:
         hostPath:
           path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.worker.workerDataPath }}
           type: Directory
+      - name: logs
+        hostPath:
+          path: {{ .Values.controller.volumes.baseHostPath }}{{ .Values.controller.volumes.logPath }}
+          type: Directory
       - name: dataset
         hostPath:
           path: {{ .Values.controller.volumes.datasetHostPath }}

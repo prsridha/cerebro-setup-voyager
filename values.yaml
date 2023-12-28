@@ -1,6 +1,7 @@
 controller:
   volumes:
     userCodePath: /user
+    logPath: /data/logs
     kvsPath: /key_value_store
     dataPath: /data/data_storage
     metricsPath: /data/metrics_storage
