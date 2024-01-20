@@ -23,17 +23,19 @@ cluster:
   gid: <gid>
   jupyterTokenSting: projectcerebro
   resourceRequests:
-    controllerMemory: 16G
+    workerGPU: 8
+    workerCPU: 92
+    hugePages: 1Gi
+    workerMemory: 384G
     controllerCPU: 16
-    workerMemory: 384G
-    workerCPU: 92
-    workerGPU: 8
+    controllerMemory: 16G
   resourceLimits:
-    controllerMemory: 32G
-    controllerCPU: 20
-    workerMemory: 384G
-    workerCPU: 92
     workerGPU: 8
+    workerCPU: 92
+    hugePages: 1Gi
+    workerMemory: 384G
+    controllerCPU: 20
+    controllerMemory: 32G
   numWorkers: 4
   username: <username>
 worker:
